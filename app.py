@@ -1,6 +1,6 @@
 from flask import Flask
 from extensions import db, migrate, jwt
-from auth import auth_bp  # Rutas de autenticación
+from routes.auth import auth_bp  # Rutas de autenticación
 from routes import crud_bp  # Importar el blueprint principal
 from config import Config  # Importar la clase Config
 
