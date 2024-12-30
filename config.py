@@ -1,5 +1,4 @@
 class Config:
-    # Configuración para la base de datos
     SQLALCHEMY_DATABASE_URI = 'sqlite:///business.db'  # Aquí se define la URI de la base de datos
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SECRET_KEY = 'supersecretkey'

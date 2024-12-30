@@ -84,3 +84,35 @@ class Tienda(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     nombre = db.Column(db.String(100), nullable=False)
     empresa = db.Column(db.String(100), nullable=False)
+
+
+class Venta(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    fecha = db.Column(db.Date, nullable=False)
+    tipo_movimiento = db.Column(db.String(50), nullable=False)
+    tipo_venta = db.Column(db.String(50), nullable=False)
+    numero_comprobante = db.Column(db.String(50), nullable=False)
+    cliente = db.Column(db.String(100), nullable=False)
+    valor_venta = db.Column(db.Float, nullable=False)
+    igv = db.Column(db.Float, nullable=False)
+    total = db.Column(db.Float, nullable=False)
+    estado = db.Column(db.String(50), default="PROCESADA")
+
+    def __repr__(self):
+        return f'<Venta {self.id} - {self.cliente}>'
+
+
+class Compra(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    fecha = db.Column(db.Date, nullable=False)
+    tipo_movimiento = db.Column(db.String(50), nullable=False)
+    tipo_compra = db.Column(db.String(50), nullable=False)
+    numero_documento = db.Column(db.String(50), nullable=False)
+    ruc_proveedor = db.Column(db.String(50), nullable=False)
+    subtotal = db.Column(db.Float, nullable=False)
+    igv = db.Column(db.Float, nullable=False)
+    total = db.Column(db.Float, nullable=False)
+    estado = db.Column(db.String(50), default="PROCESADA")
+
+    def __repr__(self):
+        return f'<Compra {self.id} - {self.ruc_proveedor}>'
