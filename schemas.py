@@ -69,3 +69,31 @@ class TiendaSchema(Schema):
     id = fields.Int(dump_only=True)
     nombre = fields.Str(required=True)
     empresa = fields.Str(required=True)
+
+from marshmallow import Schema, fields
+
+class VentaSchema(Schema):
+    id = fields.Int(dump_only=True)
+    fecha = fields.Date(required=True)
+    tipo_movimiento = fields.Str(required=True)
+    tipo_venta = fields.Str(required=True)
+    numero_comprobante = fields.Str(required=True)
+    cliente = fields.Str(required=True)
+    valor_venta = fields.Float(required=True)
+    igv = fields.Float(required=True)
+    total = fields.Float(required=True)
+    estado = fields.Str(default="PROCESADA")
+
+from marshmallow import Schema, fields
+
+class CompraSchema(Schema):
+    id = fields.Int(dump_only=True)
+    fecha = fields.Date(required=True)
+    tipo_movimiento = fields.Str(required=True)
+    tipo_compra = fields.Str(required=True)
+    numero_documento = fields.Str(required=True)
+    ruc_proveedor = fields.Str(required=True)
+    subtotal = fields.Float(required=True)
+    igv = fields.Float(required=True)
+    total = fields.Float(required=True)
+    estado = fields.Str(default="PROCESADA")
