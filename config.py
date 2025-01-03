@@ -1,6 +1,6 @@
 class Config:
-    SQLALCHEMY_DATABASE_URI = 'sqlite:///business.db'  # Aquí se define la URI de la base de datos
+    SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://root:gitano200J%40%40J%40%40@localhost:3306/login_project'
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SECRET_KEY = 'supersecretkey'
     JWT_SECRET_KEY = 'supersecretkey'
-    JWT_ACCESS_TOKEN_EXPIRES = 3600  # Expiración del token en segundos
+    JWT_ACCESS_TOKEN_EXPIRES = 3600
