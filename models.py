@@ -19,6 +19,7 @@ class User(db.Model):
 
 class Cliente(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+    codigo = db.Column(db.String(100), nullable=False)
     nombre = db.Column(db.String(100), nullable=False)
     direccion = db.Column(db.String(200), nullable=False)
     telefono = db.Column(db.String(20), nullable=False)
@@ -26,6 +27,7 @@ class Cliente(db.Model):
 
 class Proveedor(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+    codigo = db.Column(db.String(100), nullable=False)
     nombre = db.Column(db.String(100), nullable=False)
     direccion = db.Column(db.String(200), nullable=False)
     telefono = db.Column(db.String(20), nullable=False)
@@ -58,6 +60,7 @@ class Producto(db.Model):
 
 class Vendedor(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+    codigo = db.Column(db.String(100), nullable=False)
     nombre = db.Column(db.String(100), nullable=False)
     direccion = db.Column(db.String(200), nullable=False)
     telefono = db.Column(db.String(20), nullable=False)
