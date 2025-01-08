@@ -45,7 +45,7 @@ class ProductoSchema(Schema):
 
 
 class VendedorSchema(Schema):
-    idvend = fields.Int(dump_only=True)
+    idvend = fields.Int(required=True)  # Ahora se permite enviar este campo
     nomvendedor = fields.Str(required=True)
     direccion = fields.Str()
     telefono = fields.Str()
@@ -82,33 +82,47 @@ class TiendaSchema(Schema):
     nombree = fields.Str(required=True)
 
 
-class VentaSchema(Schema):
-    id = fields.Int(dump_only=True)
+
+
+# class VentaSchema(Schema):
+#     fecha = fields.Date(required=True)
+#     tipo_movimiento = fields.Str(required=True)
+#     tipo_venta = fields.Str(required=True)
+#     num_docum = fields.Str(required=True)
+#     ruc_cliente = fields.Str(required=True)
+#     cliente = fields.Str(required=True)
+#     valor_de_venta = fields.Float(required=True)
+#     igv = fields.Float(required=True)
+#     total = fields.Float(required=True)
+#     estado = fields.Str(required=True)
+#
+#
+
+
+class CompraSchema(Schema):
     fecha = fields.Date(required=True)
     tipo_movimiento = fields.Str(required=True)
     tipo_venta = fields.Str(required=True)
-    numero_comprobante = fields.Str(required=True)
-    cliente = fields.Str(required=True)
-    valor_venta = fields.Float(required=True)
+    num_docum = fields.Str(required=True)
+    ruc_cliente = fields.Str(required=True)
+    proveedor = fields.Str(required=True)
+    valor_de_venta = fields.Float(required=True)
     igv = fields.Float(required=True)
     total = fields.Float(required=True)
-    estado = fields.Str(default="PROCESADA")
+    estado = fields.Str(required=True)
 
-from marshmallow import Schema, fields
 
-from marshmallow import Schema, fields
 
-class CompraSchema(Schema):
-    idmov = fields.Int(dump_only=True)  # Solo para serializar
-    fecha = fields.Date(required=True)  # Campo obligatorio
-    tip_mov = fields.Str(required=True)  # Tipo de movimiento
-    tip_vta = fields.Str(required=True)  # Tipo de venta
-    tip_docum = fields.Str(required=True)  # Tipo de documento
-    num_docum = fields.Str(required=True)  # Número del documento
-    ruc_cliente = fields.Str(required=True)  # RUC del cliente
-    vendedor = fields.Str(required=True)  # Vendedor
-    vvta = fields.Float(required=True)  # Valor de la venta
-    igv = fields.Float(required=True)  # IGV
-    total = fields.Float(required=True)  # Total de la compra
-    idemp = fields.Int(required=True)  # ID de la empresa
-    estado = fields.Str(required=True)  # Estado de la compra
+class RegMovCabSchema(Schema):
+    idmov = fields.Int(dump_only=True)  # Primary Key
+    fecha = fields.Date(required=True)
+    tip_mov = fields.Int(required=True)
+    tip_vta = fields.Int(required=True)
+    tip_docum = fields.Str(required=True)
+    num_docum = fields.Str(required=True)
+    ruc_cliente = fields.Str(allow_none=True)  # Foreign Key, puede ser opcional
+    vendedor = fields.Str(allow_none=True)
+    vta = fields.Float(required=True)
+    igv = fields.Float(required=True)
+    total = fields.Float(required=True)
+    idemp = fields.Str(required=True)  # Empresa relacionada
