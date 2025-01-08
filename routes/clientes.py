@@ -9,7 +9,8 @@ cliente_schema = ClienteSchema()
 clientes_schema = ClienteSchema(many=True)
 
 # Ojo: usaremos route('') en lugar de route('/')
-@cliente_bp.route('', methods=['GET'])
+@cliente_bp.route('/', methods=['GET'])
+# @jwt_required()
 def get_all_clientes():
     clientes = Cliente.query.all()
     return jsonify(clientes_schema.dump(clientes)), 200
