@@ -54,7 +54,7 @@ class Producto(db.Model):
     prventa = db.Column(db.Float, nullable=False)
     modelo = db.Column(db.String(50), nullable=True)
     medida = db.Column(db.String(50), nullable=True)
-    estado = db.Column(db.String(10), nullable=False)
+    estado = db.Column(db.Integer, db.ForeignKey('tipo_estados.tipo_estado_id'))
 
     # Elimina idlinea porque no existe en la base de datos
 
@@ -73,7 +73,6 @@ class Vendedor(db.Model):
     # Relación con Tienda
     tienda = db.relationship('Tienda', backref='vendedores')
 
-from extensions import db
 
 class Serie(db.Model):
     __tablename__ = 'ncorrela'
@@ -111,38 +110,63 @@ class Tienda(db.Model):
     def __repr__(self):
         return f"<Tienda idemp={self.idemp} nombree={self.nombree}>"
 
+#
+# class Venta(db.Model):
+#     __tablename__ = 'vista_ventas'
+#     __table_args__ = {'extend_existing': True}  # Permitir uso sobre vistas
+#
+#     fecha = db.Column(db.Date, nullable=False)
+#     tipo_movimiento = db.Column(db.String(50), nullable=False)
+#     tipo_venta = db.Column(db.String(50), nullable=False)
+#     num_docum = db.Column(db.String(50), nullable=False)
+#     ruc_cliente = db.Column(db.String(20), nullable=False)
+#     cliente = db.Column(db.String(100), nullable=False)
+#     valor_de_venta = db.Column(db.Float, nullable=False)
+#     igv = db.Column(db.Float, nullable=False)
+#     total = db.Column(db.Float, nullable=False)
+#     estado = db.Column(db.String(10), nullable=False)
+#
 
-class Venta(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    fecha = db.Column(db.Date, nullable=False)
-    tipo_movimiento = db.Column(db.String(50), nullable=False)
-    tipo_venta = db.Column(db.String(50), nullable=False)
-    numero_comprobante = db.Column(db.String(50), nullable=False)
-    cliente = db.Column(db.String(100), nullable=False)
-    valor_venta = db.Column(db.Float, nullable=False)
-    igv = db.Column(db.Float, nullable=False)
-    total = db.Column(db.Float, nullable=False)
-    estado = db.Column(db.String(50), default="PROCESADA")
-
-    def __repr__(self):
-        return f'<Venta {self.id} - {self.cliente}>'
 
 
-from extensions import db
+class TipoEstados(db.Model):
+    __tablename__ = 'tipo_estados'
+
+    tipo_estado_id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(50), nullable=False)
+
+
+
 
 class Compra(db.Model):
-    __tablename__ = 'regmovcab'  # Nombre de la tabla en la base de datos
+    __tablename__ = 'vista_compras'  # Nombre de la vista en la base de datos
+    fecha = db.Column(db.Date, nullable=False)
+    tipo_movimiento = db.Column(db.String(100), nullable=False)
+    tipo_venta = db.Column(db.String(100), nullable=False)
+    num_docum = db.Column(db.String(50), nullable=False, primary_key=True)
+    ruc_cliente = db.Column(db.String(20), nullable=False)
+    proveedor = db.Column(db.String(100), nullable=False)
+    valor_de_venta = db.Column(db.Float, nullable=False)
+    igv = db.Column(db.Float, nullable=False)
+    total = db.Column(db.Float, nullable=False)
+    estado = db.Column(db.String(50), nullable=False)
 
-    idmov = db.Column(db.Integer, primary_key=True)  # ID único
-    fecha = db.Column(db.Date, nullable=False)  # Fecha de la compra
-    tip_mov = db.Column(db.String(50), nullable=False)  # Tipo de movimiento
-    tip_vta = db.Column(db.String(50), nullable=False)  # Tipo de venta
-    tip_docum = db.Column(db.String(50), nullable=False)  # Tipo de documento
-    num_docum = db.Column(db.String(50), nullable=False)  # Número del documento
-    ruc_cliente = db.Column(db.String(11), nullable=False)  # RUC del cliente
-    vendedor = db.Column(db.String(100), nullable=False)  # Vendedor
+
+
+class RegMovCab(db.Model):
+    __tablename__ = 'regmovcab'
+
+    idmov = db.Column(db.Integer, primary_key=True)  # Identificador único
+    fecha = db.Column(db.Date, nullable=False)  # Fecha de la operación
+    tip_mov = db.Column(db.String(10), nullable=False)  # Tipo de movimiento (ej. venta/compra)
+    tip_vta = db.Column(db.String(10), nullable=False)  # Tipo de venta
+    tip_docum = db.Column(db.String(10), nullable=False)  # Tipo de documento (ej. factura/boleta)
+    num_docum = db.Column(db.String(50), nullable=False)  # Número de documento
+    ruc_cliente = db.Column(db.String(15), nullable=False)  # RUC o ID del cliente
+    vendedor = db.Column(db.String(50), nullable=True)  # Nombre del vendedor
     vvta = db.Column(db.Float, nullable=False)  # Valor de la venta
-    igv = db.Column(db.Float, nullable=False)  # IGV (Impuesto General a las Ventas)
-    total = db.Column(db.Float, nullable=False)  # Total de la compra
-    idemp = db.Column(db.Integer, nullable=False)  # ID de la empresa
-    estado = db.Column(db.String(50), nullable=False)  # Estado de la compra
+    igv = db.Column(db.Float, nullable=False)  # Impuesto General a las Ventas
+    total = db.Column(db.Float, nullable=False)  # Total de la operación
+    idemp = db.Column(db.String(10), nullable=False)  # Identificador de la empresa
+    estado = db.Column(db.String(10), nullable=False)  # Estado de la transacción
+
