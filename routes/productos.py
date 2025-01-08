@@ -2,7 +2,7 @@ from flask import Blueprint, request, jsonify
 # Si usas JWT, descomenta:
 # from flask_jwt_extended import jwt_required
 
-from models import Producto, Linea
+from models import Producto, Linea, TipoEstados
 from schemas import ProductoSchema
 from extensions import db
 
@@ -48,13 +48,31 @@ def get_producto(id):
     return jsonify(producto_schema.dump(producto)), 200
 @producto_bp.route('/', methods=['GET'])
 def get_all_productos():
-    productos = Producto.query.all()
+    # Consulta con JOIN para incluir el nombre del estado
+    productos = db.session.query(
+        Producto.idprod,
+        Producto.nomproducto,
+        Producto.umedida,
+        Producto.st_ini,
+        Producto.st_act,
+        Producto.st_min,
+        Producto.pr_costo,
+        Producto.prventa,
+        Producto.modelo,
+        Producto.medida,
+        Producto.estado,
+        Linea.nombre.label("linea_nombre"),
+        TipoEstados.name.label("estado_nombre")
+    ).join(
+        Linea, Producto.idprod.startswith(Linea.idlinea)
+    ).join(
+        TipoEstados, Producto.estado == TipoEstados.tipo_estado_id
+    ).all()
 
-    # Si necesitas información de la línea, busca manualmente
-    productos_con_lineas = []
+    # Crear una lista de productos con el estado como nombre
+    productos_con_detalles = []
     for producto in productos:
-        linea = Linea.query.filter_by(idlinea=producto.idprod[:2]).first()  # Usa lógica personalizada
-        productos_con_lineas.append({
+        productos_con_detalles.append({
             "idprod": producto.idprod,
             "nomproducto": producto.nomproducto,
             "umedida": producto.umedida,
@@ -65,11 +83,11 @@ def get_all_productos():
             "prventa": producto.prventa,
             "modelo": producto.modelo,
             "medida": producto.medida,
-            "estado": producto.estado,
-            "linea": linea.nombre if linea else "Sin Línea"
+            "estado": producto.estado_nombre,  # Usar el nombre del estado
+            "linea": producto.linea_nombre if producto.linea_nombre else "Sin Línea"
         })
 
-    return jsonify(productos_con_lineas), 200
+    return jsonify(productos_con_detalles), 200
 
 @producto_bp.route('/<string:idprod>', methods=['PUT'])
 def update_producto(idprod):
