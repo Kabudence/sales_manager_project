@@ -1,42 +1,32 @@
-from flask import Blueprint, request, jsonify
-from models import Venta
+from flask import Blueprint, jsonify
+from sqlalchemy import text
 from extensions import db
-from schemas import VentaSchema
 
 venta_bp = Blueprint('venta_bp', __name__)
-venta_schema = VentaSchema()
-ventas_schema = VentaSchema(many=True)
 
-@venta_bp.route('/ventas', methods=['GET'])
+# Ruta para obtener todas las ventas
+@venta_bp.route('/', methods=['GET'])
 def get_all_ventas():
-    ventas = Venta.query.all()
-    return jsonify(ventas_schema.dump(ventas)), 200
+    try:
+        query = text("SELECT * FROM vista_ventas")
+        with db.engine.connect() as connection:
+            result = connection.execute(query)
+            ventas = [dict(row._mapping) for row in result]  # Usa ._mapping para convertir filas en dicts
+        return jsonify(ventas), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
-@venta_bp.route('/ventas/<int:id>', methods=['GET'])
-def get_venta(id):
-    venta = Venta.query.get_or_404(id)
-    return jsonify(venta_schema.dump(venta)), 200
-
-@venta_bp.route('/ventas', methods=['POST'])
-def create_venta():
-    data = request.get_json()
-    venta = Venta(**data)
-    db.session.add(venta)
-    db.session.commit()
-    return jsonify(venta_schema.dump(venta)), 201
-
-@venta_bp.route('/ventas/<int:id>', methods=['PUT'])
-def update_venta(id):
-    venta = Venta.query.get_or_404(id)
-    data = request.get_json()
-    for key, value in data.items():
-        setattr(venta, key, value)
-    db.session.commit()
-    return jsonify(venta_schema.dump(venta)), 200
-
-@venta_bp.route('/ventas/<int:id>', methods=['DELETE'])
-def delete_venta(id):
-    venta = Venta.query.get_or_404(id)
-    db.session.delete(venta)
-    db.session.commit()
-    return jsonify({"message": "Venta eliminada exitosamente"}), 200
+# Ruta para obtener una venta específica por número de documento
+@venta_bp.route('/<string:num_docum>', methods=['GET'])
+def get_venta_by_num_docum(num_docum):
+    try:
+        query = text("SELECT * FROM vista_ventas WHERE num_docum = :num_docum")
+        with db.engine.connect() as connection:
+            result = connection.execute(query, {"num_docum": num_docum})
+            venta = result.fetchone()
+        if venta:
+            return jsonify(dict(venta._mapping)), 200  # Usa ._mapping para convertir filas en dicts
+        else:
+            return jsonify({"error": "Venta no encontrada"}), 404
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
