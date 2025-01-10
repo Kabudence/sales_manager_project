@@ -17,14 +17,22 @@ def get_all_clientes():
 
 @cliente_bp.route('', methods=['POST'])
 def create_cliente():
+    print("DEBUG: request.data =", request.data)
+
     data = request.get_json()
+    print("DEBUG: request.get_json() =", data)
+
     errors = cliente_schema.validate(data)
     if errors:
+        print("DEBUG: Marshmallow validation errors =", errors)
+
         return jsonify(errors), 400
 
     cliente = Cliente(**data)
     db.session.add(cliente)
     db.session.commit()
+    print("DEBUG: Cliente creado =", cliente_schema.dump(cliente))
+
     return jsonify(cliente_schema.dump(cliente)), 201
 
 @cliente_bp.route('/<int:id>', methods=['GET'])
