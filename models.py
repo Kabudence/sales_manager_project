@@ -44,6 +44,8 @@ class Proveedor(db.Model):
 class Producto(db.Model):
     __tablename__ = 'productos'
 
+    idemp = db.Column(db.String(10), nullable=False)  # Empresa relacionada
+    periodo = db.Column(db.String(10), nullable=False)  # Periodo del producto
     idprod = db.Column(db.String(50), primary_key=True)
     nomproducto = db.Column(db.String(100), nullable=False)
     umedida = db.Column(db.String(20), nullable=False)
@@ -55,6 +57,9 @@ class Producto(db.Model):
     modelo = db.Column(db.String(50), nullable=True)
     medida = db.Column(db.String(50), nullable=True)
     estado = db.Column(db.Integer, db.ForeignKey('tipo_estados.tipo_estado_id'))
+
+    def __repr__(self):
+        return f"<Producto {self.idprod}>"
 
     # Elimina idlinea porque no existe en la base de datos
 

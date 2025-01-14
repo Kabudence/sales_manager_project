@@ -5,7 +5,6 @@ from schemas import ProveedorSchema
 from extensions import db
 
 proveedor_bp = Blueprint('proveedor_bp', __name__)
-
 proveedor_schema = ProveedorSchema()
 proveedores_schema = ProveedorSchema(many=True)
 
@@ -18,7 +17,7 @@ def get_all_proveedores():
     return jsonify(proveedores_schema.dump(proveedores)), 200
 
 
-@proveedor_bp.route('/', methods=['POST'])
+@proveedor_bp.route('', methods=['POST'])
 # @jwt_required()
 def create_proveedor():
     """POST /api/proveedores/"""

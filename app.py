@@ -5,7 +5,7 @@ from flask_cors import CORS
 
 from routes import proveedor_bp, producto_bp, linea_bp, clase_bp, tienda_bp, vendedor_bp, serie_bp
 from routes.auth import auth_bp
-from routes.clientes import cliente_bp  # Importa tu blueprint
+from routes.clientes import cliente_bp
 from routes.compras import compra_bp
 from routes.regmovcab import regmovcab_bp
 from routes.ventas import venta_bp

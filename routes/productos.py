@@ -12,29 +12,48 @@ producto_schema = ProductoSchema()
 productos_schema = ProductoSchema(many=True)
 
 
-@producto_bp.route('/', methods=['POST'])
+@producto_bp.route('', methods=['POST'])
 def create_producto():
     data = request.get_json()
+    print("DEBUG: Raw request data =", request.data)
+    print("DEBUG: Parsed JSON =", data)
+
+    # Mapear campos
+    mapped_data = {
+        "idemp": data.get("idemp", "01"),  # Valor predeterminado
+        "periodo": data.get("periodo", "2025"),  # Valor predeterminado
+        "idprod": data.get("id"),
+        "nomproducto": data.get("nombre"),
+        "umedida": data.get("unidad_medida"),
+        "st_ini": data.get("stock_inicial", 0),
+        "st_act": data.get("stock_actual", 0),
+        "st_min": data.get("stock_minimo", 0),
+        "pr_costo": data.get("precio_costo", 0.0),
+        "prventa": data.get("precio_venta", 0.0),
+        "modelo": data.get("modelo", "MODELO"),
+        "medida": data.get("medida", "MEDIDA"),
+        "estado": data.get("estado", 1),  # Valor predeterminado
+    }
+
+    print("DEBUG: Mapped Data =", mapped_data)
 
     # Validar campos requeridos
-    required_fields = ["idprod", "nomproducto", "umedida"]
+    required_fields = ["idprod", "nomproducto", "umedida", "pr_costo", "prventa"]
     for field in required_fields:
-        if field not in data:
+        if field not in mapped_data or mapped_data[field] is None:
             return jsonify({"error": f"El campo {field} es obligatorio"}), 400
 
-    # Validar la línea asociada
-    linea_id = data.get("idprod")[:2]  # Ejemplo: usa los primeros dos dígitos para obtener la línea
-    linea = Linea.query.filter_by(idlinea=linea_id).first()
-    if not linea:
-        return jsonify({"error": f"La línea con ID {linea_id} no existe"}), 404
-
-    # Crear el producto
-    producto = Producto(**data)
+    # Crear y guardar el producto
+    producto = Producto(**mapped_data)
     db.session.add(producto)
-    db.session.commit()
-
-    return jsonify({"message": "Producto creado con éxito", "producto": producto.idprod}), 201
-
+    try:
+        db.session.commit()
+        print("DEBUG: Producto creado con éxito:", producto)
+        return jsonify({"message": "Producto creado con éxito", "producto": producto.idprod}), 201
+    except Exception as e:
+        print("ERROR: Falló al guardar el producto:", str(e))
+        db.session.rollback()
+        return jsonify({"error": "Error al guardar el producto"}), 500
 
 
 

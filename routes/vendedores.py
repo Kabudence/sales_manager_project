@@ -1,7 +1,5 @@
 from flask import Blueprint, jsonify, request
-from flask_jwt_extended import jwt_required
 from marshmallow import ValidationError
-
 from models import Vendedor, Tienda
 from schemas import VendedorSchema
 from extensions import db
@@ -25,20 +23,19 @@ def get_vendedor(idvend):
     return jsonify(vendedor_schema.dump(vendedor)), 200
 
 # Crear un nuevo vendedor
-@vendedor_bp.route('/', methods=['POST'])
+@vendedor_bp.route('', methods=['POST'])
+# @jwt_required()
 def create_vendedor():
-    try:
-        data = request.get_json()
-        schema = VendedorSchema()
-        vendedor_data = schema.load(data)
-        vendedor = Vendedor(**vendedor_data)
-        db.session.add(vendedor)
-        db.session.commit()
-        return schema.dump(vendedor), 201
-    except ValidationError as err:
-        return {"errors": err.messages}, 400
-    except Exception as e:
-        return {"error": str(e)}, 500
+    print(request.json)  # Verifica qué datos estás recibiendo
+    data = request.get_json()
+    errors = vendedor_schema.validate(data)
+    if errors:
+        return jsonify(errors), 400
+
+    nuevo = Vendedor(**data)
+    db.session.add(nuevo)
+    db.session.commit()
+    return jsonify(vendedor_schema.dump(nuevo)), 201
 
 
 # Actualizar un vendedor existente
