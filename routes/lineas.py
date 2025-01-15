@@ -21,7 +21,7 @@ def get_linea(id):
     linea = Linea.query.get_or_404(id)
     return jsonify(linea_schema.dump(linea)), 200
 
-@linea_bp.route('/', methods=['POST'])
+@linea_bp.route('', methods=['POST'])
 # @jwt_required()
 def create_linea():
     data = request.get_json()
@@ -50,11 +50,6 @@ def update_linea(id):
 # @jwt_required()
 def delete_linea(id):
     linea = Linea.query.get_or_404(id)
-
-    # Verificar si hay productos asociados
-    if linea.productos:
-        return jsonify({"error": "No se puede eliminar la línea porque tiene productos asociados"}), 400
-
     db.session.delete(linea)
     db.session.commit()
     return jsonify({"message": "Linea eliminada exitosamente"}), 200

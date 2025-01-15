@@ -61,7 +61,6 @@ class Producto(db.Model):
     def __repr__(self):
         return f"<Producto {self.idprod}>"
 
-    # Elimina idlinea porque no existe en la base de datos
 
 
 class Vendedor(db.Model):

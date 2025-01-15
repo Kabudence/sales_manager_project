@@ -62,7 +62,7 @@ class SerieSchema(Schema):
 
 # Schema para Linea
 class LineaSchema(Schema):
-    idlinea = fields.Int(dump_only=True)
+    idlinea = fields.Int(required=True)
     nombre = fields.Str(required=True)
     idemp = fields.Int(required=True)
     estado = fields.Str(required=True)
