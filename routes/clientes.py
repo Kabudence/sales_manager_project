@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from flask_jwt_extended import jwt_required
+from flask_jwt_extended import jwt_required, get_jwt_identity
 
 from models import Cliente
 from schemas import ClienteSchema
@@ -10,11 +10,14 @@ cliente_bp = Blueprint('cliente_bp', __name__)
 cliente_schema = ClienteSchema()
 clientes_schema = ClienteSchema(many=True)
 
+
 @cliente_bp.route('/', methods=['GET'])
 @jwt_required()
 def get_all_clientes():
+
     clientes = Cliente.query.all()
     return jsonify(clientes_schema.dump(clientes)), 200
+
 
 @cliente_bp.route('', methods=['POST'])
 @jwt_required()
@@ -64,3 +67,4 @@ def delete_cliente(id):
     db.session.delete(cliente)
     db.session.commit()
     return jsonify({"message": "Cliente eliminado exitosamente"}), 200
+

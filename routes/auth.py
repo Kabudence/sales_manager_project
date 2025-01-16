@@ -50,12 +50,18 @@ def login():
     if user and user.check_password(password):
         # Serializamos el objeto de identidad
         identity = json.dumps({"username": user.username, "role": user.role})
-        access_token = create_access_token(identity=identity)
+
+        access_token = create_access_token(identity=identity)  # Usa el objeto serializado
         refresh_token = create_refresh_token(identity=identity)
-        return jsonify(access_token=access_token, refresh_token=refresh_token), 200
+
+        return jsonify(
+            access_token=access_token,
+            refresh_token=refresh_token,
+            role=user.role,
+            username=user.username
+        ), 200
     else:
         return jsonify({"msg": "Credenciales inválidas"}), 401
-
 # Ruta para refrescar tokens
 @auth_bp.route('/refresh', methods=['POST'])
 @jwt_required(refresh=True)  # Aquí usamos el decorador actualizado

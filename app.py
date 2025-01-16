@@ -1,5 +1,6 @@
-from flask import Flask
+from flask import Flask, request, jsonify
 from flask_bcrypt import Bcrypt
+from flask_jwt_extended import JWTManager
 
 from extensions import db, migrate, jwt
 from config import Config
@@ -11,6 +12,7 @@ from routes.compras import compra_bp
 from routes.regmovcab import regmovcab_bp
 from routes.ventas import venta_bp
 
+jwt = JWTManager()
 
 def create_app():
     app = Flask(__name__)
@@ -42,6 +44,32 @@ def create_app():
     app.register_blueprint(producto_bp, url_prefix="/api/productos")
     app.register_blueprint(auth_bp, url_prefix="/api/auth")
 
+    @app.before_request
+    def handle_preflight():
+        if request.method == "OPTIONS":
+            response = app.make_default_options_response()
+            headers = response.headers
+
+            # Asegúrate de que los encabezados necesarios estén presentes
+            headers["Access-Control-Allow-Origin"] = request.headers.get("Origin", "*")
+            headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS"
+            headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization"
+            return response
+
+    @jwt.unauthorized_loader
+    def unauthorized_callback(reason):
+        print(f"[JWT] Unauthorized callback activado. Razón: {reason}")
+        return jsonify({"msg": "No autorizado", "reason": reason}), 401
+
+    @jwt.invalid_token_loader
+    def invalid_token_callback(reason):
+        print(f"[JWT] Invalid token callback activado. Razón: {reason}")
+        return jsonify({"msg": "Token inválido", "reason": reason}), 422
+
+    @jwt.expired_token_loader
+    def expired_token_callback(jwt_header, jwt_payload):
+        print(f"[JWT] Expired token callback activado. JWT: {jwt_payload}")
+        return jsonify({"msg": "El token ha expirado"}), 401
 
     return app
 
