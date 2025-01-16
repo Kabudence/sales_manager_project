@@ -1,10 +1,11 @@
 from flask import Flask
+from flask_bcrypt import Bcrypt
+
 from extensions import db, migrate, jwt
 from config import Config
 from flask_cors import CORS
 
-from routes import proveedor_bp, producto_bp, linea_bp, clase_bp, tienda_bp, vendedor_bp, serie_bp
-from routes.auth import auth_bp
+from routes import proveedor_bp, producto_bp, linea_bp, clase_bp, tienda_bp, vendedor_bp, serie_bp,auth_bp
 from routes.clientes import cliente_bp
 from routes.compras import compra_bp
 from routes.regmovcab import regmovcab_bp
@@ -40,6 +41,7 @@ def create_app():
     app.register_blueprint(venta_bp, url_prefix='/api/ventas')
     app.register_blueprint(producto_bp, url_prefix="/api/productos")
     app.register_blueprint(auth_bp, url_prefix="/api/auth")
+
 
     return app
 

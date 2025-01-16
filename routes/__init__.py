@@ -1,4 +1,6 @@
 from flask import Blueprint
+
+from routes.auth import auth_bp
 from routes.clientes import cliente_bp
 from routes.proveedores import proveedor_bp
 from routes.productos import producto_bp
@@ -19,3 +21,5 @@ crud_bp.register_blueprint(serie_bp, url_prefix='/series')
 crud_bp.register_blueprint(linea_bp, url_prefix='/lineas')
 crud_bp.register_blueprint(clase_bp, url_prefix='/clases')
 crud_bp.register_blueprint(tienda_bp, url_prefix='/tiendas')
+crud_bp.register_blueprint(auth_bp, url_prefix="/api/auth")
+
