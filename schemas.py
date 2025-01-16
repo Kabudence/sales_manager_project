@@ -62,15 +62,14 @@ class SerieSchema(Schema):
 
 # Schema para Linea
 class LineaSchema(Schema):
-    idlinea = fields.Int(required=True)
+    idlinea = fields.Int(dump_only=True)  # autoincrement, no se envía
     nombre = fields.Str(required=True)
-    idemp = fields.Int(required=True)
+    idemp = fields.Str(required=True)
     estado = fields.Str(required=True)
 
 
 # Schema para Clase
 class ClaseSchema(Schema):
-    id = fields.Int(dump_only=True)
     idclase = fields.Int(dump_only=True)  # Solo para serialización
     nombres = fields.Str(required=True)  # Campo obligatorio
     idemp = fields.Int(required=True)  # Campo obligatorio
@@ -107,8 +106,8 @@ class CompraSchema(Schema):
     ruc_cliente = fields.Str(required=True)
     proveedor = fields.Str(required=True)
     valor_de_venta = fields.Float(required=True)
-    igv = fields.Float(required=True)
-    total = fields.Float(required=True)
+    igv = fields.Str(required=True)
+    total = fields.Str(required=True)
     estado = fields.Str(required=True)
 
 

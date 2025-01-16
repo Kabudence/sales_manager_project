@@ -93,7 +93,7 @@ class Serie(db.Model):
 class Linea(db.Model):
     __tablename__ = 'lineas'
 
-    idlinea = db.Column(db.Integer, primary_key=True)
+    idlinea = db.Column(db.Integer, primary_key=True, autoincrement=True)
     nombre = db.Column(db.String(255), nullable=False)
     idemp = db.Column(db.String(10), nullable=False)
     estado = db.Column(db.Integer, nullable=False)
@@ -150,9 +150,9 @@ class Compra(db.Model):
     num_docum = db.Column(db.String(50), nullable=False, primary_key=True)
     ruc_cliente = db.Column(db.String(20), nullable=False)
     proveedor = db.Column(db.String(100), nullable=False)
-    valor_de_venta = db.Column(db.Float, nullable=False)
-    igv = db.Column(db.Float, nullable=False)
-    total = db.Column(db.Float, nullable=False)
+    valor_de_venta = db.Column(db.String(100), nullable=False)
+    igv = db.Column(db.String(100), nullable=False)
+    total = db.Column(db.String(100), nullable=False)
     estado = db.Column(db.String(50), nullable=False)
 
 

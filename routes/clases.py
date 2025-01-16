@@ -15,7 +15,7 @@ def get_all_clases():
     return jsonify(clases_schema.dump(clases)), 200
 
 
-@clase_bp.route('/', methods=['POST'])
+@clase_bp.route('', methods=['POST'])
 def create_clase():
     data = request.get_json()
     errors = clase_schema.validate(data)  # Validar datos de entrada
