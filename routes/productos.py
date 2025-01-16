@@ -111,26 +111,27 @@ def get_all_productos():
 @producto_bp.route('/<string:idprod>', methods=['PUT'])
 def update_producto(idprod):
     data = request.get_json()
+    print("Datos recibidos para actualizar:", data)
 
     # Validar que el producto exista
-    producto = Producto.query.get(idprod)
+    producto = Producto.query.filter_by(idprod=idprod).first()
     if not producto:
         return jsonify({"error": f"El producto con id {idprod} no existe"}), 404
 
-    # Validar que la línea exista si se proporciona
-    idlinea = data.get("idlinea")
-    if idlinea:
-        linea = Linea.query.get(idlinea)
-        if not linea:
-            return jsonify({"error": f"La línea con id {idlinea} no existe"}), 404
-
     # Actualizar los campos
     for key, value in data.items():
-        setattr(producto, key, value)
+        if hasattr(producto, key):
+            print(f"Actualizando {key} a {value}")
+            setattr(producto, key, value)
 
-    db.session.commit()
-
-    return jsonify({"message": "Producto actualizado con éxito", "producto": producto.idprod}), 200
+    try:
+        db.session.commit()
+        print(f"Producto actualizado: {producto}")
+        return jsonify({"message": "Producto actualizado con éxito", "producto": producto.idprod}), 200
+    except Exception as e:
+        db.session.rollback()
+        print(f"Error al actualizar el producto: {e}")
+        return jsonify({"error": "Error al actualizar el producto"}), 500
 
 # Opcionalmente, ruta DELETE:
 @producto_bp.route('/<string:id>', methods=['DELETE'])

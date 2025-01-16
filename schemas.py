@@ -28,20 +28,19 @@ class ProveedorSchema(Schema):
 # Schema para Producto
 
 class ProductoSchema(Schema):
-
-    idemp = fields.Str(required=True)  # Empresa relacionada
-    periodo = fields.Str(required=True)  # Periodo
-    idprod = fields.Str(required=True)  # ID del producto
-    nomproducto = fields.Str(required=True)  # Nombre del producto
-    umedida = fields.Str(required=True)  # Unidad de medida
-    st_ini = fields.Int()  # Stock inicial
-    st_act = fields.Int()  # Stock actual
-    st_min = fields.Int()  # Stock mínimo
-    pr_costo = fields.Float(required=True)  # Precio de costo
-    modelo = fields.Str()  # Modelo del producto
-    medida = fields.Str()  # Medida del producto
-    estado = fields.Str()  # Estado del producto
-    prventa = fields.Float(required=True)  # Precio de venta
+    idemp = fields.Str(required=True)
+    periodo = fields.Str(required=True)
+    idprod = fields.Str(required=True)
+    nomproducto = fields.Str(required=True)
+    umedida = fields.Str(required=True)
+    st_ini = fields.Int()
+    st_act = fields.Int()
+    st_min = fields.Int()
+    pr_costo = fields.Float(required=True)
+    modelo = fields.Str()
+    medida = fields.Str()
+    estado = fields.Int()  # Cambiado a Integer
+    prventa = fields.Float(required=True)
 
 
 class VendedorSchema(Schema):
