@@ -1,4 +1,5 @@
 from flask import Blueprint, jsonify
+from flask_jwt_extended import jwt_required
 from sqlalchemy import text
 from extensions import db
 
@@ -12,6 +13,7 @@ from extensions import db
 venta_bp = Blueprint('venta_bp', __name__)
 
 @venta_bp.route('/', methods=['GET'])
+@jwt_required()
 def get_all_ventas():
     try:
         page = int(request.args.get('page', 1))
@@ -39,6 +41,7 @@ def get_all_ventas():
 
 # Ruta para obtener una venta específica por número de documento
 @venta_bp.route('/<string:num_docum>', methods=['GET'])
+@jwt_required()
 def get_venta_by_num_docum(num_docum):
     try:
         query = text("SELECT * FROM vista_ventas WHERE num_docum = :num_docum")
@@ -53,6 +56,7 @@ def get_venta_by_num_docum(num_docum):
         return jsonify({"error": str(e)}), 500
 
 @venta_bp.route('/advanced-search', methods=['GET'])
+@jwt_required()
 def get_advanced_filter_ventas():
     try:
         from_price = request.args.get('fromPrice', type=float)

@@ -10,19 +10,19 @@ linea_schema = LineaSchema()
 lineas_schema = LineaSchema(many=True)
 
 @linea_bp.route('/', methods=['GET'])
-# @jwt_required()
+@jwt_required()
 def get_all_lineas():
     lineas = Linea.query.all()
     return jsonify(lineas_schema.dump(lineas)), 200
 
 @linea_bp.route('/<int:id>', methods=['GET'])
-# @jwt_required()
+@jwt_required()
 def get_linea(id):
     linea = Linea.query.get_or_404(id)
     return jsonify(linea_schema.dump(linea)), 200
 
 @linea_bp.route('', methods=['POST'])
-# @jwt_required()
+@jwt_required()
 def create_linea():
     linea = linea_schema.load(request.json)
     print(request.json)
@@ -37,7 +37,7 @@ def create_linea():
     return jsonify(linea_schema.dump(linea)), 201
 
 @linea_bp.route('/<int:id>', methods=['PUT'])
-# @jwt_required()
+@jwt_required()
 def update_linea(id):
     linea = Linea.query.get_or_404(id)
     print(request.json)
@@ -52,7 +52,7 @@ def update_linea(id):
     return jsonify(linea_schema.dump(linea)), 200
 
 @linea_bp.route('/<int:id>', methods=['DELETE'])
-# @jwt_required()
+@jwt_required()
 def delete_linea(id):
     linea = Linea.query.get_or_404(id)
     db.session.delete(linea)
@@ -60,6 +60,7 @@ def delete_linea(id):
     return jsonify({"message": "Linea eliminada exitosamente"}), 200
 
 @linea_bp.route('/api/lineas/<int:idlinea>/productos', methods=['GET'])
+@jwt_required()
 def get_productos_por_linea(idlinea):
     linea = Linea.query.get_or_404(idlinea)
     productos = linea.productos.all()  # Obtiene los productos relacionados

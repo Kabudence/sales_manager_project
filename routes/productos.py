@@ -1,4 +1,6 @@
 from flask import Blueprint, request, jsonify
+from flask_jwt_extended import jwt_required
+
 # Si usas JWT, descomenta:
 # from flask_jwt_extended import jwt_required
 
@@ -13,6 +15,7 @@ productos_schema = ProductoSchema(many=True)
 
 
 @producto_bp.route('', methods=['POST'])
+@jwt_required()
 def create_producto():
     data = request.get_json()
     print("DEBUG: Raw request data =", request.data)
@@ -58,7 +61,7 @@ def create_producto():
 
 
 @producto_bp.route('/<string:id>', methods=['GET'])
-# @jwt_required()
+@jwt_required()
 def get_producto(id):
     """
     GET /api/productos/<id>
@@ -66,6 +69,7 @@ def get_producto(id):
     producto = Producto.query.get_or_404(id)
     return jsonify(producto_schema.dump(producto)), 200
 @producto_bp.route('/', methods=['GET'])
+@jwt_required()
 def get_all_productos():
     # Consulta con JOIN para incluir el nombre del estado
     productos = db.session.query(
@@ -109,6 +113,7 @@ def get_all_productos():
     return jsonify(productos_con_detalles), 200
 
 @producto_bp.route('/<string:idprod>', methods=['PUT'])
+@jwt_required()
 def update_producto(idprod):
     data = request.get_json()
     print("Datos recibidos para actualizar:", data)
@@ -135,7 +140,7 @@ def update_producto(idprod):
 
 # Opcionalmente, ruta DELETE:
 @producto_bp.route('/<string:id>', methods=['DELETE'])
-# @jwt_required()
+@jwt_required()
 def delete_producto(id):
     """
     DELETE /api/productos/<id>

@@ -10,7 +10,7 @@ proveedores_schema = ProveedorSchema(many=True)
 
 
 @proveedor_bp.route('/', methods=['GET'])
-# @jwt_required()
+@jwt_required()
 def get_all_proveedores():
     """GET /api/proveedores/"""
     proveedores = Proveedor.query.all()
@@ -18,6 +18,7 @@ def get_all_proveedores():
 
 
 @proveedor_bp.route('', methods=['POST'])
+@jwt_required()
 # @jwt_required()
 def create_proveedor():
     """POST /api/proveedores/"""
@@ -34,7 +35,7 @@ def create_proveedor():
 
 
 @proveedor_bp.route('/<int:id>', methods=['GET'])
-# @jwt_required()
+@jwt_required()
 def get_proveedor(id):
     """GET /api/proveedores/<id>"""
     proveedor = Proveedor.query.get_or_404(id)
@@ -42,6 +43,7 @@ def get_proveedor(id):
 
 
 @proveedor_bp.route('/<int:id>', methods=['PUT'])
+@jwt_required()
 # @jwt_required()
 def update_proveedor(id):
     """PUT /api/proveedores/<id>"""

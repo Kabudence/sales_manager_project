@@ -11,7 +11,7 @@ regmovcabs_schema = RegMovCabSchema(many=True)
 
 # GET: Obtener todos los registros
 @regmovcab_bp.route('/', methods=['GET'])
-# @jwt_required()
+@jwt_required()
 def get_all_regmovcabs():
     regmovcabs = RegMovCab.query.all()
     return jsonify(regmovcabs_schema.dump(regmovcabs)), 200
@@ -19,7 +19,7 @@ def get_all_regmovcabs():
 
 # GET: Obtener un registro por ID
 @regmovcab_bp.route('/<int:id>', methods=['GET'])
-# @jwt_required()
+@jwt_required()
 def get_regmovcab(id):
     regmovcab = RegMovCab.query.get_or_404(id)
     return jsonify(regmovcab_schema.dump(regmovcab)), 200
@@ -27,7 +27,7 @@ def get_regmovcab(id):
 
 # POST: Crear un nuevo registro
 @regmovcab_bp.route('/', methods=['POST'])
-# @jwt_required()
+@jwt_required()
 def create_regmovcab():
     data = request.get_json()
 
@@ -45,7 +45,7 @@ def create_regmovcab():
 
 # PUT: Actualizar un registro existente
 @regmovcab_bp.route('/<int:id>', methods=['PUT'])
-# @jwt_required()
+@jwt_required()
 def update_regmovcab(id):
     regmovcab = RegMovCab.query.get_or_404(id)
     data = request.get_json()
@@ -65,7 +65,7 @@ def update_regmovcab(id):
 
 # DELETE: Eliminar un registro
 @regmovcab_bp.route('/<int:id>', methods=['DELETE'])
-# @jwt_required()
+@jwt_required()
 def delete_regmovcab(id):
     regmovcab = RegMovCab.query.get_or_404(id)
     db.session.delete(regmovcab)

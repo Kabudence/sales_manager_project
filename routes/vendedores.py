@@ -1,4 +1,5 @@
 from flask import Blueprint, jsonify, request
+from flask_jwt_extended import jwt_required
 from marshmallow import ValidationError
 from models import Vendedor, Tienda
 from schemas import VendedorSchema
@@ -10,21 +11,21 @@ vendedores_schema = VendedorSchema(many=True)
 
 # Obtener todos los vendedores
 @vendedor_bp.route('/', methods=['GET'])
-# @jwt_required()
+@jwt_required()
 def get_all_vendedores():
     vendedores = Vendedor.query.all()
     return jsonify(vendedores_schema.dump(vendedores)), 200
 
 # Obtener un vendedor por ID
 @vendedor_bp.route('/<int:idvend>', methods=['GET'])
-# @jwt_required()
+@jwt_required()
 def get_vendedor(idvend):
     vendedor = Vendedor.query.get_or_404(idvend)
     return jsonify(vendedor_schema.dump(vendedor)), 200
 
 # Crear un nuevo vendedor
 @vendedor_bp.route('', methods=['POST'])
-# @jwt_required()
+@jwt_required()
 def create_vendedor():
     print(request.json)  # Verifica qué datos estás recibiendo
     data = request.get_json()
@@ -40,7 +41,7 @@ def create_vendedor():
 
 # Actualizar un vendedor existente
 @vendedor_bp.route('/<int:idvend>', methods=['PUT'])
-# @jwt_required()
+@jwt_required()
 def update_vendedor(idvend):
     vendedor = Vendedor.query.get_or_404(idvend)
     data = request.get_json()
@@ -65,7 +66,7 @@ def update_vendedor(idvend):
 
 # Eliminar un vendedor
 @vendedor_bp.route('/<int:idvend>', methods=['DELETE'])
-# @jwt_required()
+@jwt_required()
 def delete_vendedor(idvend):
     vendedor = Vendedor.query.get_or_404(idvend)
     db.session.delete(vendedor)

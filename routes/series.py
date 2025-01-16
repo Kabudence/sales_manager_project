@@ -10,21 +10,21 @@ series_schema = SerieSchema(many=True)
 
 # Obtener todas las series
 @serie_bp.route('', methods=['GET'])
-# @jwt_required()
+@jwt_required()
 def get_all_series():
     series = Serie.query.all()
     return jsonify(series_schema.dump(series)), 200
 
 # Obtener una serie específica
 @serie_bp.route('/<string:tcomp>/<string:serie>', methods=['GET'])
-# @jwt_required()
+@jwt_required()
 def get_serie(tcomp, serie):
     serie_obj = Serie.query.get_or_404((tcomp, serie))
     return jsonify(serie_schema.dump(serie_obj)), 200
 
 # Crear una nueva serie
 @serie_bp.route('/', methods=['POST'])
-# @jwt_required()
+@jwt_required()
 def create_serie():
     data = request.get_json()
 
@@ -46,7 +46,7 @@ def create_serie():
 
 # Actualizar una serie
 @serie_bp.route('/<string:tcomp>/<string:serie>', methods=['PUT'])
-# @jwt_required()
+@jwt_required()
 def update_serie(tcomp, serie):
     serie_obj = Serie.query.get_or_404((tcomp, serie))
     data = request.get_json()
@@ -71,7 +71,7 @@ def update_serie(tcomp, serie):
 
 # Eliminar una serie
 @serie_bp.route('/<string:tcomp>/<string:serie>', methods=['DELETE'])
-# @jwt_required()
+@jwt_required()
 def delete_serie(tcomp, serie):
     serie_obj = Serie.query.get_or_404((tcomp, serie))
     db.session.delete(serie_obj)

@@ -1,4 +1,6 @@
 from flask import Blueprint, request, jsonify
+from flask_jwt_extended import jwt_required
+
 from models import Cliente
 from schemas import ClienteSchema
 from extensions import db
@@ -8,14 +10,14 @@ cliente_bp = Blueprint('cliente_bp', __name__)
 cliente_schema = ClienteSchema()
 clientes_schema = ClienteSchema(many=True)
 
-# Ojo: usaremos route('') en lugar de route('/')
 @cliente_bp.route('/', methods=['GET'])
-# @jwt_required()
+@jwt_required()
 def get_all_clientes():
     clientes = Cliente.query.all()
     return jsonify(clientes_schema.dump(clientes)), 200
 
 @cliente_bp.route('', methods=['POST'])
+@jwt_required()
 def create_cliente():
     print("DEBUG: request.data =", request.data)
 
@@ -36,11 +38,13 @@ def create_cliente():
     return jsonify(cliente_schema.dump(cliente)), 201
 
 @cliente_bp.route('/<int:id>', methods=['GET'])
+
 def get_cliente(id):
     cliente = Cliente.query.get_or_404(id)
     return jsonify(cliente_schema.dump(cliente)), 200
 
 @cliente_bp.route('/<int:id>', methods=['PUT'])
+@jwt_required()
 def update_cliente(id):
     cliente = Cliente.query.get_or_404(id)
     data = request.get_json()
@@ -54,6 +58,7 @@ def update_cliente(id):
     return jsonify(cliente_schema.dump(cliente)), 200
 
 @cliente_bp.route('/<int:id>', methods=['DELETE'])
+@jwt_required()
 def delete_cliente(id):
     cliente = Cliente.query.get_or_404(id)
     db.session.delete(cliente)

@@ -10,12 +10,16 @@ clase_schema = ClaseSchema()
 clases_schema = ClaseSchema(many=True)
 
 @clase_bp.route('/', methods=['GET'])
+@jwt_required()
+
 def get_all_clases():
     clases = Clase.query.all()
     return jsonify(clases_schema.dump(clases)), 200
 
 
 @clase_bp.route('', methods=['POST'])
+@jwt_required()
+
 def create_clase():
     data = request.get_json()
     errors = clase_schema.validate(data)  # Validar datos de entrada
@@ -39,6 +43,7 @@ def get_clase(id):
 
 
 @clase_bp.route('/<int:id>', methods=['PUT'])
+@jwt_required()
 def update_clase(id):
     clase = Clase.query.get_or_404(id)
     data = request.get_json()
@@ -56,6 +61,7 @@ def update_clase(id):
     return jsonify({"message": "Clase actualizada con éxito"}), 200
 
 @clase_bp.route('/<int:id>', methods=['DELETE'])
+@jwt_required()
 def delete_clase(id):
     clase = Clase.query.get_or_404(id)
     db.session.delete(clase)
