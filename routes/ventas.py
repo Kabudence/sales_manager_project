@@ -56,7 +56,7 @@ def get_venta_by_num_docum(num_docum):
         return jsonify({"error": str(e)}), 500
 
 @venta_bp.route('/advanced-search', methods=['GET'])
-@jwt_required()
+# @jwt_required()
 def get_advanced_filter_ventas():
     try:
         from_price = request.args.get('fromPrice', type=float)

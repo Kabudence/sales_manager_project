@@ -71,3 +71,42 @@ def delete_regmovcab(id):
     db.session.delete(regmovcab)
     db.session.commit()
     return jsonify({"message": "Registro eliminado exitosamente"}), 200
+
+
+# GET: Obtener un registro por num_docum
+@regmovcab_bp.route('/search/<string:num_docum>', methods=['GET'])
+# @jwt_required()
+def find_by_num_docum(num_docum):
+    # Buscar el registro por num_docum
+    regmovcab = RegMovCab.query.filter_by(num_docum=num_docum).first()
+
+    if not regmovcab:
+        return jsonify({"message": f"No se encontró un registro con num_docum: {num_docum}"}), 404
+
+    return jsonify(regmovcab_schema.dump(regmovcab)), 200
+
+@regmovcab_bp.route('/change-state-to-complete/<int:idmov>', methods=['PUT'])
+# @jwt_required()
+def change_state_to_complete(idmov):
+    # Buscar el registro correspondiente por idmov
+    regmovcab = RegMovCab.query.get(idmov)
+
+    if not regmovcab:
+        return jsonify({"message": f"No se encontró un registro con idmov: {idmov}"}), 404
+
+    # Obtener los datos del body
+    data = request.get_json()
+    vendedor = data.get("vendedor")
+
+    if not vendedor:
+        return jsonify({"error": "El campo 'vendedor' es obligatorio"}), 400
+
+    # Actualizar el estado y el vendedor
+    regmovcab.estado = 1
+    regmovcab.vendedor = vendedor
+    db.session.commit()
+
+    return jsonify({
+        "message": f"Estado del registro con idmov {idmov} actualizado a '1' y vendedor modificado con éxito",
+        "updated_record": regmovcab_schema.dump(regmovcab)
+    }), 200

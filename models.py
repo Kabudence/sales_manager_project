@@ -168,7 +168,7 @@ class Compra(db.Model):
 class RegMovCab(db.Model):
     __tablename__ = 'regmovcab'
 
-    idmov = db.Column(db.Integer, primary_key=True)  # Identificador único
+    idmov = db.Column(db.Integer, primary_key=True,autoincrement=True)  # Identificador único
     fecha = db.Column(db.Date, nullable=False)  # Fecha de la operación
     tip_mov = db.Column(db.String(10), nullable=False)  # Tipo de movimiento (ej. venta/compra)
     tip_vta = db.Column(db.String(10), nullable=False)  # Tipo de venta
@@ -182,3 +182,31 @@ class RegMovCab(db.Model):
     idemp = db.Column(db.String(10), nullable=False)  # Identificador de la empresa
     estado = db.Column(db.String(10), nullable=False)  # Estado de la transacción
 
+
+
+class RegMovDet(db.Model):
+    __tablename__ = 'regmovdet'
+
+    iddet = db.Column(db.Integer, primary_key=True, autoincrement=True)  # ID autogenerado
+    idcab = db.Column(db.Integer)
+    producto = db.Column(db.String(8), nullable=False)  # Código del producto
+    cantidad = db.Column(db.Numeric(12, 2), nullable=False)  # Cantidad del producto
+    precio = db.Column(db.Numeric(12, 2), nullable=False)  # Precio unitario
+    igv = db.Column(db.Numeric(12, 2), nullable=False)  # IGV
+    total = db.Column(db.Numeric(12, 2), nullable=False)  # Total
+    st_act = db.Column(db.Numeric(12, 2), nullable=False)  # Estado actual (puede ser stock u otro valor)
+
+    def __repr__(self):
+        return f"<RegMovDet iddet={self.iddet}, idcab={self.idcab}, producto={self.producto}>"
+
+
+
+class FotoProductoVendido(db.Model):
+    __tablename__ = 'foto_producto_vendido'
+
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    regmovdet_id = db.Column(db.Integer)
+    fecha = db.Column(db.DateTime, default=db.func.current_timestamp())
+
+    def __repr__(self):
+        return f"<FotoProductoVendido {self.id}>"

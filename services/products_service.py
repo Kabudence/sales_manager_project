@@ -3,7 +3,7 @@ from difflib import SequenceMatcher
 
 def search_product(item_name, item_price):
     """
-    Busca el producto más similar basado en el nombre y el precio desde la base de datos.
+    Busca el producto más similar basado en el nombre (`nomproducto`) y el precio (`prventa`) desde la base de datos.
 
     Args:
         item_name (str): Nombre del item buscado.
@@ -16,7 +16,9 @@ def search_product(item_name, item_price):
     products = Producto.query.all()
 
     # Convertir los productos a una lista de diccionarios
-    product_list = [{"id": p.id, "name": p.name, "price": p.price} for p in products]
+    product_list = [
+        {"idprod": p.idprod, "name": p.nomproducto, "price": p.prventa} for p in products
+    ]
 
     # Usar el algoritmo para encontrar el producto más cercano
     max_similarity = 0

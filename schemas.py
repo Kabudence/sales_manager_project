@@ -44,6 +44,17 @@ class ProductoSchema(Schema):
     prventa = fields.Float(required=True)
 
 
+class RegMovDetSchema(Schema):
+    iddet = fields.Int(dump_only=True)
+    idcab = fields.Int(required=True)
+    producto = fields.Str(required=True)
+    cantidad = fields.Decimal(required=True, as_string=True)
+    precio = fields.Decimal(required=True, as_string=True)
+    igv = fields.Decimal(required=True, as_string=True)
+    total = fields.Decimal(required=True, as_string=True)
+    st_act = fields.Decimal(required=True, as_string=True)
+
+
 class VendedorSchema(Schema):
     idvend = fields.Int(required=True)  # Ahora se permite enviar este campo
     nomvendedor = fields.Str(required=True)
