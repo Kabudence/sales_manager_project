@@ -5,8 +5,9 @@ from services.products_service import search_product
 app = create_app()
 
 # Datos del item buscado
-item_name = "JGO MUEBLE REX (WILDER) + 01 MESA V"
-item_price = 1269.07
+item_name = "COMODA 1.0 AZABACHE CON tocador MELAMINE"
+item_price = 500
+
 
 # Ejecutar la búsqueda dentro del contexto de la aplicación
 with app.app_context():
