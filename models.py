@@ -207,6 +207,7 @@ class FotoProductoVendido(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     regmovdet_id = db.Column(db.Integer)
     fecha = db.Column(db.DateTime, default=db.func.current_timestamp())
+    foto_codigo = db.Column(db.Text, nullable=False)  # Aquí se almacenará la imagen en Base64
 
     def __repr__(self):
         return f"<FotoProductoVendido {self.id}>"
