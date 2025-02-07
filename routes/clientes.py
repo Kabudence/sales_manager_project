@@ -68,3 +68,62 @@ def delete_cliente(id):
     db.session.commit()
     return jsonify({"message": "Cliente eliminado exitosamente"}), 200
 
+
+@cliente_bp.route('/automatic-create', methods=['POST'])
+def automatic_create_cliente():
+    try:
+        # Obtener los datos de la solicitud
+        data = request.get_json()
+        party_client = data.get("PartyClient")
+
+        # Validar que los datos necesarios existan
+        if not party_client:
+            return jsonify({"error": "Faltan los datos en 'PartyClient'"}), 400
+
+        identify_code = party_client.get("IdentifyCode")
+        registration_name = party_client.get("RegistrationName")
+
+        if not identify_code or not registration_name:
+            return jsonify({"error": "Faltan datos obligatorios: IdentifyCode o RegistrationName"}), 400
+
+        # Generar valores para los campos del cliente
+        idcliente = identify_code  # `idcliente` se genera automáticamente como `IdentifyCode`
+        tdoc = "D" if len(identify_code) == 8 and identify_code.isdigit() else "R"
+        nomcliente = registration_name
+        direccion = "TRUJILLO"  # Automático
+        telefono = "111111"  # Automático
+        estado = 1  # Estado predeterminado
+
+        # Verificar si el cliente ya existe
+        cliente_existente = Cliente.query.get(idcliente)
+        if cliente_existente:
+            # Si el cliente ya existe, devolver una respuesta como si fuera una creación exitosa
+            return jsonify({
+                "message": "El cliente ya existe, devolviendo datos existentes.",
+                "cliente": cliente_schema.dump(cliente_existente)
+            }), 200
+
+        # Crear el nuevo cliente
+        nuevo_cliente = Cliente(
+            idcliente=idcliente,
+            tdoc=tdoc,
+            nomcliente=nomcliente,
+            direccion=direccion,
+            telefono=telefono,
+            estado=estado
+        )
+
+        # Guardar el cliente en la base de datos
+        db.session.add(nuevo_cliente)
+        db.session.commit()
+
+        return jsonify({
+            "message": "Cliente creado automáticamente con éxito",
+            "cliente": cliente_schema.dump(nuevo_cliente)
+        }), 201
+
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 500
+
+
