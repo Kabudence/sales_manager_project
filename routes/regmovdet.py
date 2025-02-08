@@ -1,7 +1,7 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required
 from extensions import db
-from models import RegMovDet, Producto
+from models import RegMovDet, Producto, RegMovCab
 from schemas import RegMovDetSchema
 
 # Crear el Blueprint para regmovdet
@@ -68,6 +68,57 @@ def get_regmovdet_by_idcab_join(idcab):
     except Exception as e:
         logger.error(f"Error en get_regmovdet_by_idcab_join: {e}", exc_info=True)
         return jsonify({"error": str(e)}), 500
+
+
+@regmovdet_bp.route('/by-num-doc/<string:num_docum>', methods=['GET'])
+def get_regmovdet_by_num_doc_join(num_docum):
+    try:
+        logger.info(f"Iniciando búsqueda de regmovdet con num_docum = {num_docum} (JOIN)")
+
+        # 1. Buscar la cabecera en regmovcab para obtener el idmov
+        cabecera = RegMovCab.query.filter_by(num_docum=num_docum).first()
+
+        if not cabecera:
+            logger.warning(f"No se encontró cabecera con num_docum = {num_docum}")
+            return jsonify({"message": f"No se encontró regmovcab con num_docum {num_docum}"}), 404
+
+        idcab = cabecera.idmov
+
+        # 2. Realizar la consulta JOIN en regmovdet filtrando por idcab
+        resultados = db.session.query(RegMovDet, Producto.nomproducto).\
+            join(Producto, RegMovDet.producto == Producto.idprod).\
+            filter(RegMovDet.idcab == idcab).all()
+
+        if not resultados:
+            logger.warning(f"No se encontraron detalles (regmovdet) para idcab {idcab}")
+            return jsonify({"message": f"No se encontraron registros para num_docum {num_docum}"}), 404
+
+        logger.info(f"Se encontraron {len(resultados)} registros para num_docum = {num_docum} (JOIN)")
+
+        salida = []
+        for regmovdet, nomproducto in resultados:
+            logger.debug(
+                f"Procesando registro: iddet={regmovdet.iddet}, producto={regmovdet.producto}, nomproducto={nomproducto}"
+            )
+            salida.append({
+                "iddet": regmovdet.iddet,
+                "idcab": regmovdet.idcab,
+                "producto": regmovdet.producto,
+                "cantidad": float(regmovdet.cantidad),
+                "precio": float(regmovdet.precio),
+                "igv": float(regmovdet.igv),
+                "total": float(regmovdet.total),
+                "st_act": float(regmovdet.st_act),
+                "nomproducto": nomproducto
+            })
+
+        logger.info("Consulta con JOIN completada con éxito.")
+        return jsonify(salida), 200
+
+    except Exception as e:
+        logger.error(f"Error en get_regmovdet_by_num_doc_join: {e}", exc_info=True)
+        return jsonify({"error": str(e)}), 500
+
 
 
 # POST: Crear un nuevo registro

@@ -22,7 +22,7 @@ def get_all_regmovcabs():
 
 # GET: Obtener un registro por ID
 @regmovcab_bp.route('/<int:id>', methods=['GET'])
-@jwt_required()
+# @jwt_required()
 def get_regmovcab(id):
     regmovcab = RegMovCab.query.get_or_404(id)
     return jsonify(regmovcab_schema.dump(regmovcab)), 200
@@ -95,21 +95,28 @@ def find_by_num_docum(num_docum):
 #ESTE ES EL PUT PARA ASIGNAR LA BOLETA COMO COMPLETADO Y RELLENAR EL EMPLEADO.
 # ASI QUE SOLO TIENES QUE PASARLE EL PARAMETRO DE EMPLEADO DNI
 @regmovcab_bp.route('/change-state-to-complete/<int:idmov>', methods=['PUT'])
-# @jwt_required()
 def change_state_to_complete(idmov):
     try:
+        print(f"[DEBUG] Entrando a change_state_to_complete => idmov={idmov}")  # LOG
+
         # Buscar el registro correspondiente por idmov
         regmovcab = RegMovCab.query.get(idmov)
-
         if not regmovcab:
+            # LOG: Si no existe la cabecera, devolvemos 404
+            print(f"[DEBUG] No existe regmovcab con idmov={idmov}, devolviendo 404")
             return jsonify({"message": f"No se encontró un registro con idmov: {idmov}"}), 404
 
         # Obtener los datos del body
         data = request.get_json()
+        print(f"[DEBUG] Body recibido en JSON => {data}")  # LOG
         vendedor = data.get("vendedor")
 
         if not vendedor:
+            print(f"[DEBUG] 'vendedor' no fue provisto en el JSON. Devolviendo 400")  # LOG
             return jsonify({"error": "El campo 'vendedor' es obligatorio"}), 400
+
+        # LOG: Informar que pasamos la validación de vendedor
+        print(f"[DEBUG] Recibo vendedor={vendedor} => Actualizando estado y vendedor...")
 
         # Actualizar el estado y el vendedor
         regmovcab.estado = 1
@@ -117,27 +124,38 @@ def change_state_to_complete(idmov):
 
         # Buscar los registros de regmovdet asociados al idmov
         regmovdets = RegMovDet.query.filter_by(idcab=idmov).all()
+        print(f"[DEBUG] regmovdets encontrados: {len(regmovdets)}")  # LOG
 
         if not regmovdets:
+            # LOG: Sin detalles => 404
+            print(f"[DEBUG] No se encontraron productos asociados al idmov={idmov}")
             return jsonify({"message": f"No se encontraron productos asociados al registro con idmov: {idmov}"}), 404
 
         # Actualizar las cantidades de los productos
         for regmovdet in regmovdets:
+            print(f"[DEBUG] Procesando regmovdet.iddet={regmovdet.iddet}, producto={regmovdet.producto}, cantidad={regmovdet.cantidad}")  # LOG
             producto = Producto.query.filter_by(idprod=regmovdet.producto).first()
 
             if producto:
+                print(f"[DEBUG] Producto encontrado => nomproducto={producto.nomproducto}, st_act={producto.st_act}")  # LOG
                 # Reducir la cantidad del inventario (st_act)
                 if producto.st_act is not None:
                     producto.st_act -= regmovdet.cantidad
                     if producto.st_act < 0:
+                        print(f"[DEBUG] Stock insuficiente para {producto.nomproducto}. Devolviendo 400")  # LOG
                         return jsonify({"error": f"El producto {producto.nomproducto} tiene inventario insuficiente"}), 400
+                    else:
+                        print(f"[DEBUG] {producto.nomproducto} stock actualizado => st_act={producto.st_act}")  # LOG
                 else:
+                    print(f"[DEBUG] {producto.nomproducto} no tiene st_act definido. Devolviendo 400")  # LOG
                     return jsonify({"error": f"El producto {producto.nomproducto} no tiene stock inicial definido"}), 400
             else:
+                print(f"[DEBUG] No se encontró el producto con ID: {regmovdet.producto}, devolviendo 404")  # LOG
                 return jsonify({"error": f"No se encontró el producto con ID: {regmovdet.producto}"}), 404
 
         # Confirmar cambios en la base de datos
         db.session.commit()
+        print("[DEBUG] Cambio de estado y vendedor completado correctamente.")  # LOG
 
         return jsonify({
             "message": f"Estado del registro con idmov {idmov} actualizado a '1', vendedor modificado y productos actualizados con éxito",
@@ -145,6 +163,9 @@ def change_state_to_complete(idmov):
         }), 200
 
     except Exception as e:
+        print("[ERROR] Excepción en change_state_to_complete:")
+        import traceback
+        traceback.print_exc()  # LOG
         db.session.rollback()
         return jsonify({"error": str(e)}), 500
 
