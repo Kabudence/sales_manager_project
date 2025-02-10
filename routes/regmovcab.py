@@ -5,6 +5,7 @@ from flask_jwt_extended import jwt_required
 from models import RegMovCab, RegMovDet, Producto
 from schemas import RegMovCabSchema
 from extensions import db
+from services.notificacion_service import crear_notificacion
 from services.products_service import search_product
 
 regmovcab_bp = Blueprint('regmovcab_bp', __name__)
@@ -102,7 +103,6 @@ def change_state_to_complete(idmov):
         # Buscar el registro correspondiente por idmov
         regmovcab = RegMovCab.query.get(idmov)
         if not regmovcab:
-            # LOG: Si no existe la cabecera, devolvemos 404
             print(f"[DEBUG] No existe regmovcab con idmov={idmov}, devolviendo 404")
             return jsonify({"message": f"No se encontró un registro con idmov: {idmov}"}), 404
 
@@ -115,8 +115,10 @@ def change_state_to_complete(idmov):
             print(f"[DEBUG] 'vendedor' no fue provisto en el JSON. Devolviendo 400")  # LOG
             return jsonify({"error": "El campo 'vendedor' es obligatorio"}), 400
 
-        # LOG: Informar que pasamos la validación de vendedor
         print(f"[DEBUG] Recibo vendedor={vendedor} => Actualizando estado y vendedor...")
+
+        # Obtener el numdocum_regmovcab
+        numdocum_regmovcab = regmovcab.num_docum  # Suponiendo que el campo numdocum está en RegMovCab
 
         # Actualizar el estado y el vendedor
         regmovcab.estado = 1
@@ -127,9 +129,13 @@ def change_state_to_complete(idmov):
         print(f"[DEBUG] regmovdets encontrados: {len(regmovdets)}")  # LOG
 
         if not regmovdets:
-            # LOG: Sin detalles => 404
             print(f"[DEBUG] No se encontraron productos asociados al idmov={idmov}")
             return jsonify({"message": f"No se encontraron productos asociados al registro con idmov: {idmov}"}), 404
+
+        # Listas para almacenar detalles de las notificaciones
+        detalles_notificacion = []
+        alertas_stock_minimo = []
+        alertas_stock_insuficiente = []
 
         # Actualizar las cantidades de los productos
         for regmovdet in regmovdets:
@@ -138,17 +144,28 @@ def change_state_to_complete(idmov):
 
             if producto:
                 print(f"[DEBUG] Producto encontrado => nomproducto={producto.nomproducto}, st_act={producto.st_act}")  # LOG
-                # Reducir la cantidad del inventario (st_act)
+
                 if producto.st_act is not None:
-                    producto.st_act -= regmovdet.cantidad
-                    if producto.st_act < 0:
-                        print(f"[DEBUG] Stock insuficiente para {producto.nomproducto}. Devolviendo 400")  # LOG
-                        return jsonify({"error": f"El producto {producto.nomproducto} tiene inventario insuficiente"}), 400
+                    nuevo_stock = producto.st_act - regmovdet.cantidad
+                    if nuevo_stock < 0:
+                        alerta_insuficiente = f"ALERTA: Stock insuficiente para el producto {producto.nomproducto}. Venta asociada a {numdocum_regmovcab}."
+                        alertas_stock_insuficiente.append(alerta_insuficiente)
                     else:
-                        print(f"[DEBUG] {producto.nomproducto} stock actualizado => st_act={producto.st_act}")  # LOG
+                        print(f"[DEBUG] {producto.nomproducto} stock actualizado => st_act={nuevo_stock}")  # LOG
+                        producto.st_act = nuevo_stock
+                        detalles_notificacion.append(
+                            f"{producto.nomproducto}: -{regmovdet.cantidad} unidades, Stock actual: {nuevo_stock}"
+                        )
+
+                        # Verificar si el stock actual alcanza el stock mínimo
+                        if nuevo_stock == producto.st_min:
+                            alerta = f"ALERTA: El producto {producto.nomproducto} alcanzó el stock mínimo ({producto.st_min}). Venta asociada a {numdocum_regmovcab}."
+                            alertas_stock_minimo.append(alerta)
+
                 else:
                     print(f"[DEBUG] {producto.nomproducto} no tiene st_act definido. Devolviendo 400")  # LOG
-                    return jsonify({"error": f"El producto {producto.nomproducto} no tiene stock inicial definido"}), 400
+                    return jsonify(
+                        {"error": f"El producto {producto.nomproducto} no tiene stock inicial definido"}), 400
             else:
                 print(f"[DEBUG] No se encontró el producto con ID: {regmovdet.producto}, devolviendo 404")  # LOG
                 return jsonify({"error": f"No se encontró el producto con ID: {regmovdet.producto}"}), 404
@@ -156,6 +173,21 @@ def change_state_to_complete(idmov):
         # Confirmar cambios en la base de datos
         db.session.commit()
         print("[DEBUG] Cambio de estado y vendedor completado correctamente.")  # LOG
+
+        # 📢 Crear notificación con los productos modificados
+        if detalles_notificacion:
+            mensaje_notificacion = f"Venta completada por {vendedor}. Productos modificados:\n" + "\n".join(detalles_notificacion)
+            crear_notificacion(mensaje_notificacion, numdocum_regmovcab=numdocum_regmovcab)
+
+        # 📢 Crear notificaciones de alerta por stock mínimo
+        if alertas_stock_minimo:
+            for alerta in alertas_stock_minimo:
+                crear_notificacion(alerta, numdocum_regmovcab=numdocum_regmovcab)
+
+        # 📢 Crear notificaciones de alerta por stock insuficiente
+        if alertas_stock_insuficiente:
+            for alerta_insuficiente in alertas_stock_insuficiente:
+                crear_notificacion(alerta_insuficiente, numdocum_regmovcab=numdocum_regmovcab)
 
         return jsonify({
             "message": f"Estado del registro con idmov {idmov} actualizado a '1', vendedor modificado y productos actualizados con éxito",
@@ -168,7 +200,6 @@ def change_state_to_complete(idmov):
         traceback.print_exc()  # LOG
         db.session.rollback()
         return jsonify({"error": str(e)}), 500
-
 
 # ESTE POST ES PARA CREAR LA BOLETA CON DATOS INCOMPLETOS
 # SOLO REQUIERE ESTOS PARAMETOS:
