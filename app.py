@@ -9,6 +9,7 @@ from flask_cors import CORS
 from routes import proveedor_bp, producto_bp, linea_bp, clase_bp, tienda_bp, vendedor_bp, serie_bp,auth_bp
 from routes.clientes import cliente_bp
 from routes.compras import compra_bp
+from routes.notificaciones import notificaciones_bp
 from routes.regmovcab import regmovcab_bp
 from routes.regmovdet import regmovdet_bp
 from routes.ventas import venta_bp
@@ -46,6 +47,7 @@ def create_app():
     app.register_blueprint(producto_bp, url_prefix="/api/productos")
     app.register_blueprint(auth_bp, url_prefix="/api/auth")
     app.register_blueprint(fotos_bp, url_prefix='/api/fotos')
+    app.register_blueprint(notificaciones_bp, url_prefix='/api/notificaciones')
 
     app.register_blueprint(regmovdet_bp, url_prefix='/api/regmovdet')
 
