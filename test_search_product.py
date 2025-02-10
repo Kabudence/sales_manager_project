@@ -5,7 +5,7 @@ from services.products_service import search_product
 app = create_app()
 
 # Datos del item buscado
-item_name = "COMODA 1.0 AZABACHE CON tocador MELAMINE"
+item_name = "SET CUNA NIÑA"
 item_price = 500
 
 
