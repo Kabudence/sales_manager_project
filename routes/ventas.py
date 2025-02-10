@@ -184,3 +184,57 @@ def get_boletas_today_in_process_peru():
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+
+@venta_bp.route('/today-completed-peru', methods=['GET'])
+def get_boletas_today_completed_peru():
+    try:
+        # Fecha UTC actual
+        now_utc = datetime.utcnow()
+        # Ajustar a la hora de Perú (UTC-5)
+        now_peru = now_utc - timedelta(hours=5)
+        hoy_str = now_peru.date().isoformat()
+
+        # Rango de fecha para hoy
+        from_date_str = f"{hoy_str} 00:00:00"
+        to_date_str   = f"{hoy_str} 23:59:59"
+
+        # Se puede ajustar según necesidad, por ahora lo fijamos en 10
+        limit = 10
+
+        query = text(f"""
+            SELECT 
+                regmovcab.idmov,
+                regmovcab.num_docum,
+                clientes.nomcliente AS cliente,
+                tipo_estados.name AS estado,
+                regmovcab.fecha,
+                regmovcab.vvta,
+                regmovcab.igv,
+                regmovcab.total
+            FROM regmovcab
+            JOIN clientes ON regmovcab.ruc_cliente = clientes.idcliente
+            JOIN tipos_venta tv ON tv.tipo_venta_id = regmovcab.tip_vta
+            JOIN tipos_movimiento ON tipos_movimiento.tipo_movimiento_id = regmovcab.tip_mov
+            JOIN tipo_estados ON tipo_estados.tipo_estado_id = regmovcab.estado
+            WHERE tipo_estados.name = 'COMPLETADO'
+              AND regmovcab.fecha >= :from_date
+              AND regmovcab.fecha <= :to_date
+            ORDER BY regmovcab.fecha DESC
+            LIMIT :limit
+        """)
+
+        params = {
+            "from_date": from_date_str,
+            "to_date": to_date_str,
+            "limit": limit
+        }
+
+        with db.engine.connect() as connection:
+            result = connection.execute(query, params)
+            ventas = [dict(row._mapping) for row in result]
+
+        return jsonify({"ventas": ventas}), 200
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
