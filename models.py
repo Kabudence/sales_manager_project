@@ -211,3 +211,13 @@ class FotoProductoVendido(db.Model):
 
     def __repr__(self):
         return f"<FotoProductoVendido {self.id}>"
+
+
+
+class Notificacion(db.Model):
+    __tablename__ = "notificaciones"
+
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    descripcion = db.Column(db.String(255), nullable=False)
+    estado = db.Column(db.Enum('leido', 'no_leido'), nullable=False, default='no_leido')
+    numdocum_regmovcab = db.Column(db.String(50), nullable=False)  # Nuevo campo obligatorio
