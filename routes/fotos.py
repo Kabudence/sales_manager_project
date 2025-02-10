@@ -5,7 +5,7 @@ from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required
 from sqlalchemy import text
 from extensions import db
-from models import FotoProductoVendido, RegMovDet
+from models import FotoProductoVendido, RegMovDet, Producto
 
 fotos_bp = Blueprint('fotos_bp', __name__)
 
@@ -59,3 +59,51 @@ def upload_photo():
         traceback.print_exc()
 
         return jsonify({'error': str(e)}), 500
+
+@fotos_bp.route('/by-idcab/<int:idcab>', methods=['GET'])
+def get_fotos_by_idcab(idcab):
+    """
+    Obtiene todas las fotos asociadas a un idcab específico,
+    haciendo un JOIN con regmovdet y productos para incluir información adicional.
+    """
+    try:
+        # Realizar el JOIN entre FotoProductoVendido, regmovdet y productos
+        fotos = db.session.query(
+            FotoProductoVendido.id,
+            FotoProductoVendido.regmovdet_id,
+            FotoProductoVendido.foto_codigo,
+            FotoProductoVendido.fecha,
+            Producto.nomproducto,  # Nombre del producto
+            RegMovDet.total,
+            RegMovDet.cantidad# Precio vendido
+        ).join(
+            RegMovDet,
+            FotoProductoVendido.regmovdet_id == RegMovDet.iddet
+        ).join(
+            Producto,
+            RegMovDet.producto == Producto.idprod
+        ).filter(
+            RegMovDet.idcab == idcab
+        ).all()
+
+        # Convertir los resultados a JSON
+        resultado = []
+        for foto in fotos:
+            resultado.append({
+                "id": foto.id,
+                "regmovdet_id": foto.regmovdet_id,
+                "foto_codigo": foto.foto_codigo,  # Base64
+                "fecha": foto.fecha.strftime("%Y-%m-%d %H:%M:%S"),  # Formatear la fecha
+                "nombre_producto": foto.nomproducto,  # Nombre del producto
+                "precio_vendido": foto.total,         # Precio vendido
+                "cantidad": foto.cantidad         # Precio vendido
+            })
+
+        return jsonify({"fotos": resultado}), 200
+
+    except Exception as e:
+        db.session.rollback()
+        print("[ERROR] Ocurrió una excepción en GET /fotos/by-idcab/<idcab>:")
+        import traceback
+        traceback.print_exc()
+        return jsonify({"error": str(e)}), 500
