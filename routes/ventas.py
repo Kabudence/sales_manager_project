@@ -2,8 +2,7 @@ from datetime import datetime, timedelta
 
 from flask import Blueprint, jsonify
 from flask_jwt_extended import jwt_required
-from sqlalchemy import text
-from extensions import db
+
 
 venta_bp = Blueprint('venta_bp', __name__)
 
@@ -11,6 +10,8 @@ venta_bp = Blueprint('venta_bp', __name__)
 from flask import Blueprint, jsonify, request
 from sqlalchemy import text
 from extensions import db
+
+
 
 venta_bp = Blueprint('venta_bp', __name__)
 
@@ -41,6 +42,7 @@ def get_all_ventas():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+
 # Ruta para obtener una venta específica por número de documento
 @venta_bp.route('/<string:num_docum>', methods=['GET'])
 @jwt_required()
@@ -57,8 +59,10 @@ def get_venta_by_num_docum(num_docum):
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+
+
 @venta_bp.route('/advanced-search', methods=['GET'])
-# @jwt_required()
+@jwt_required()
 def get_advanced_filter_ventas():
     try:
         from_price = request.args.get('fromPrice', type=float)
@@ -134,6 +138,7 @@ def get_advanced_filter_ventas():
 
 
 @venta_bp.route('/today-inprocess-peru', methods=['GET'])
+@jwt_required()
 def get_boletas_today_in_process_peru():
     try:
         # Fecha UTC actual
@@ -187,6 +192,7 @@ def get_boletas_today_in_process_peru():
 
 
 @venta_bp.route('/today-completed-peru', methods=['GET'])
+@jwt_required()
 def get_boletas_today_completed_peru():
     try:
         # Fecha UTC actual

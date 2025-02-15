@@ -1,5 +1,7 @@
 import traceback
 from flask import Blueprint, request, jsonify
+from flask_jwt_extended import jwt_required
+
 from extensions import db
 from models import Notificacion
 
@@ -8,6 +10,7 @@ notificaciones_bp = Blueprint('notificaciones_bp', __name__)
 
 # Endpoint para cambiar el estado de una notificación a 'leído'
 @notificaciones_bp.route('/<int:notificacion_id>/leido', methods=['PUT'])
+@jwt_required()
 def cambiar_a_leido(notificacion_id):
     try:
         # Buscar la notificación en la base de datos
@@ -45,6 +48,7 @@ def cambiar_a_leido(notificacion_id):
 
 # Endpoint para obtener notificaciones, opcionalmente filtradas por estado y/o numdocum_regmovcab
 @notificaciones_bp.route('/', methods=['GET'])
+@jwt_required()
 def obtener_notificaciones():
     try:
         estado = request.args.get("estado")
