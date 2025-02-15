@@ -223,9 +223,10 @@ def get_boletas_today_completed_peru():
             JOIN tipos_venta tv ON tv.tipo_venta_id = regmovcab.tip_vta
             JOIN tipos_movimiento ON tipos_movimiento.tipo_movimiento_id = regmovcab.tip_mov
             JOIN tipo_estados ON tipo_estados.tipo_estado_id = regmovcab.estado
-            WHERE tipo_estados.name = 'COMPLETADO'
+            WHERE tipo_estados.name = 'COMPLETADO' 
               AND regmovcab.fecha >= :from_date
               AND regmovcab.fecha <= :to_date
+              AND tipos_movimiento.name = 'VENTA'
             ORDER BY regmovcab.fecha DESC
             LIMIT :limit
         """)
