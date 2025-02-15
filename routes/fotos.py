@@ -12,6 +12,7 @@ fotos_bp = Blueprint('fotos_bp', __name__)
 
 
 @fotos_bp.route('/upload-photo', methods=['POST'])
+@jwt_required()
 def upload_photo():
     try:
         # LOG: Leer el body JSON
@@ -61,44 +62,47 @@ def upload_photo():
         return jsonify({'error': str(e)}), 500
 
 @fotos_bp.route('/by-idcab/<int:idcab>', methods=['GET'])
+@jwt_required()
 def get_fotos_by_idcab(idcab):
     """
-    Obtiene todas las fotos asociadas a un idcab específico,
-    haciendo un JOIN con regmovdet y productos para incluir información adicional.
+    Obtiene las fotos asociadas a un idcab con paginación.
+    Se pueden enviar los parámetros query 'limit' (por defecto 1) y 'offset' (por defecto 0).
     """
     try:
-        # Realizar el JOIN entre FotoProductoVendido, regmovdet y productos
+        limit = int(request.args.get('limit', 1))
+        offset = int(request.args.get('offset', 0))
+
         fotos = db.session.query(
             FotoProductoVendido.id,
             FotoProductoVendido.regmovdet_id,
             FotoProductoVendido.foto_codigo,
             FotoProductoVendido.fecha,
-            Producto.nomproducto,  # Nombre del producto
+            Producto.nomproducto,
             RegMovDet.total,
-            RegMovDet.cantidad# Precio vendido
+            RegMovDet.cantidad
         ).join(
-            RegMovDet,
-            FotoProductoVendido.regmovdet_id == RegMovDet.iddet
+            RegMovDet, FotoProductoVendido.regmovdet_id == RegMovDet.iddet
         ).join(
-            Producto,
-            RegMovDet.producto == Producto.idprod
+            Producto, RegMovDet.producto == Producto.idprod
         ).filter(
             RegMovDet.idcab == idcab
-        ).all()
+        ).order_by(FotoProductoVendido.fecha.asc()) \
+         .limit(limit).offset(offset) \
+         .all()
 
-        # Convertir los resultados a JSON
         resultado = []
         for foto in fotos:
             resultado.append({
                 "id": foto.id,
                 "regmovdet_id": foto.regmovdet_id,
-                "foto_codigo": foto.foto_codigo,  # Base64
-                "fecha": foto.fecha.strftime("%Y-%m-%d %H:%M:%S"),  # Formatear la fecha
-                "nombre_producto": foto.nomproducto,  # Nombre del producto
-                "precio_vendido": foto.total,         # Precio vendido
-                "cantidad": foto.cantidad         # Precio vendido
+                "foto_codigo": foto.foto_codigo,
+                "fecha": foto.fecha.strftime("%Y-%m-%d %H:%M:%S"),
+                "nombre_producto": foto.nomproducto,
+                "precio_vendido": foto.total,
+                "cantidad": foto.cantidad
             })
 
+        # También podrías incluir información adicional (como total de fotos) si lo deseas.
         return jsonify({"fotos": resultado}), 200
 
     except Exception as e:
@@ -107,3 +111,4 @@ def get_fotos_by_idcab(idcab):
         import traceback
         traceback.print_exc()
         return jsonify({"error": str(e)}), 500
+
