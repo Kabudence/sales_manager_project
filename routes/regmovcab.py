@@ -320,6 +320,7 @@ def create_compra():
     """
     try:
         data = request.get_json()
+        print(data)
         if not data:
             return jsonify({"error": "No se recibió ningún cuerpo JSON"}), 400
 
