@@ -18,8 +18,8 @@ def get_compras():
         size = int(request.args.get('size', 10))
         offset = (page - 1) * size
 
-        # Consulta SQL con paginación
-        query = text(f"SELECT * FROM vista_compras LIMIT {size} OFFSET {offset}")
+        # Consulta SQL con paginación y orden por fecha descendente
+        query = text(f"SELECT * FROM vista_compras ORDER BY fecha DESC LIMIT {size} OFFSET {offset}")
         total_query = text("SELECT COUNT(*) FROM vista_compras")
 
         with db.engine.connect() as connection:
@@ -41,6 +41,9 @@ def get_compras():
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+
+
 @compra_bp.route('/<string:num_docum>', methods=['GET'])
 @jwt_required()
 def get_compra_by_num_docum(num_docum):
