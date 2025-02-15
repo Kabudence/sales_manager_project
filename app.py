@@ -14,6 +14,7 @@ from routes.regmovcab import regmovcab_bp
 from routes.regmovdet import regmovdet_bp
 from routes.ventas import venta_bp
 from routes.fotos import fotos_bp
+from routes.utilidades import utilidades_bp
 
 jwt = JWTManager()
 
@@ -50,6 +51,7 @@ def create_app():
     app.register_blueprint(notificaciones_bp, url_prefix='/api/notificaciones')
 
     app.register_blueprint(regmovdet_bp, url_prefix='/api/regmovdet')
+    app.register_blueprint(utilidades_bp, url_prefix='/api/utilidades')
 
     @app.before_request
     def handle_preflight():
