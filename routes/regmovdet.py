@@ -71,6 +71,7 @@ def get_regmovdet_by_idcab_join(idcab):
 
 
 @regmovdet_bp.route('/by-num-doc/<string:num_docum>', methods=['GET'])
+@jwt_required()
 def get_regmovdet_by_num_doc_join(num_docum):
     try:
         logger.info(f"Iniciando búsqueda de regmovdet con num_docum = {num_docum} (JOIN)")
@@ -123,7 +124,7 @@ def get_regmovdet_by_num_doc_join(num_docum):
 
 # POST: Crear un nuevo registro
 @regmovdet_bp.route('/', methods=['POST'])
-# @jwt_required()
+@jwt_required()
 def create_regmovdet():
     data = request.get_json()
 
