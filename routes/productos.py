@@ -18,8 +18,6 @@ productos_schema = ProductoSchema(many=True)
 @jwt_required()
 def create_producto():
     data = request.get_json()
-    print("DEBUG: Raw request data =", request.data)
-    print("DEBUG: Parsed JSON =", data)
 
     # Mapear campos
     mapped_data = {
@@ -38,7 +36,6 @@ def create_producto():
         "estado": data.get("estado", 1),  # Valor predeterminado
     }
 
-    print("DEBUG: Mapped Data =", mapped_data)
 
     # Validar campos requeridos
     required_fields = ["idprod", "nomproducto", "umedida", "pr_costo", "prventa"]
@@ -51,10 +48,8 @@ def create_producto():
     db.session.add(producto)
     try:
         db.session.commit()
-        print("DEBUG: Producto creado con éxito:", producto)
         return jsonify({"message": "Producto creado con éxito", "producto": producto.idprod}), 201
     except Exception as e:
-        print("ERROR: Falló al guardar el producto:", str(e))
         db.session.rollback()
         return jsonify({"error": "Error al guardar el producto"}), 500
 
@@ -116,7 +111,6 @@ def get_all_productos():
 @jwt_required()
 def update_producto(idprod):
     data = request.get_json()
-    print("Datos recibidos para actualizar:", data)
 
     # Validar que el producto exista
     producto = Producto.query.filter_by(idprod=idprod).first()
@@ -126,16 +120,13 @@ def update_producto(idprod):
     # Actualizar los campos
     for key, value in data.items():
         if hasattr(producto, key):
-            print(f"Actualizando {key} a {value}")
             setattr(producto, key, value)
 
     try:
         db.session.commit()
-        print(f"Producto actualizado: {producto}")
         return jsonify({"message": "Producto actualizado con éxito", "producto": producto.idprod}), 200
     except Exception as e:
         db.session.rollback()
-        print(f"Error al actualizar el producto: {e}")
         return jsonify({"error": "Error al actualizar el producto"}), 500
 
 # Opcionalmente, ruta DELETE:
