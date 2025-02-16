@@ -14,6 +14,5 @@ def eliminar_fotos_antiguas():
         session.execute(query, {"fecha_limite": hace_cuatro_meses})
         session.commit()
 
-        print("✅ Fotos antiguas eliminadas correctamente")
 
         session.close()
