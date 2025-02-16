@@ -99,24 +99,19 @@ def find_by_num_docum(num_docum):
 @jwt_required()
 def change_state_to_complete(idmov):
     try:
-        print(f"[DEBUG] Entrando a change_state_to_complete => idmov={idmov}")  # LOG
 
         # Buscar el registro correspondiente por idmov
         regmovcab = RegMovCab.query.get(idmov)
         if not regmovcab:
-            print(f"[DEBUG] No existe regmovcab con idmov={idmov}, devolviendo 404")
             return jsonify({"message": f"No se encontró un registro con idmov: {idmov}"}), 404
 
         # Obtener los datos del body
         data = request.get_json()
-        print(f"[DEBUG] Body recibido en JSON => {data}")  # LOG
         vendedor = data.get("vendedor")
 
         if not vendedor:
-            print(f"[DEBUG] 'vendedor' no fue provisto en el JSON. Devolviendo 400")  # LOG
             return jsonify({"error": "El campo 'vendedor' es obligatorio"}), 400
 
-        print(f"[DEBUG] Recibo vendedor={vendedor} => Actualizando estado y vendedor...")
 
         # Obtener el numdocum_regmovcab
         numdocum_regmovcab = regmovcab.num_docum  # Suponiendo que el campo numdocum está en RegMovCab
@@ -127,10 +122,8 @@ def change_state_to_complete(idmov):
 
         # Buscar los registros de regmovdet asociados al idmov
         regmovdets = RegMovDet.query.filter_by(idcab=idmov).all()
-        print(f"[DEBUG] regmovdets encontrados: {len(regmovdets)}")  # LOG
 
         if not regmovdets:
-            print(f"[DEBUG] No se encontraron productos asociados al idmov={idmov}")
             return jsonify({"message": f"No se encontraron productos asociados al registro con idmov: {idmov}"}), 404
 
         # Listas para almacenar detalles de las notificaciones
@@ -140,11 +133,9 @@ def change_state_to_complete(idmov):
 
         # Actualizar las cantidades de los productos
         for regmovdet in regmovdets:
-            print(f"[DEBUG] Procesando regmovdet.iddet={regmovdet.iddet}, producto={regmovdet.producto}, cantidad={regmovdet.cantidad}")  # LOG
             producto = Producto.query.filter_by(idprod=regmovdet.producto).first()
 
             if producto:
-                print(f"[DEBUG] Producto encontrado => nomproducto={producto.nomproducto}, st_act={producto.st_act}")  # LOG
 
                 if producto.st_act is not None:
                     nuevo_stock = producto.st_act - regmovdet.cantidad
@@ -152,7 +143,6 @@ def change_state_to_complete(idmov):
                         alerta_insuficiente = f"ALERTA: Stock insuficiente para el producto {producto.nomproducto}. Venta asociada a {numdocum_regmovcab}."
                         alertas_stock_insuficiente.append(alerta_insuficiente)
                     else:
-                        print(f"[DEBUG] {producto.nomproducto} stock actualizado => st_act={nuevo_stock}")  # LOG
                         producto.st_act = nuevo_stock
                         detalles_notificacion.append(
                             f"{producto.nomproducto}: -{regmovdet.cantidad} unidades, Stock actual: {nuevo_stock}"
@@ -164,16 +154,13 @@ def change_state_to_complete(idmov):
                             alertas_stock_minimo.append(alerta)
 
                 else:
-                    print(f"[DEBUG] {producto.nomproducto} no tiene st_act definido. Devolviendo 400")  # LOG
                     return jsonify(
                         {"error": f"El producto {producto.nomproducto} no tiene stock inicial definido"}), 400
             else:
-                print(f"[DEBUG] No se encontró el producto con ID: {regmovdet.producto}, devolviendo 404")  # LOG
                 return jsonify({"error": f"No se encontró el producto con ID: {regmovdet.producto}"}), 404
 
         # Confirmar cambios en la base de datos
         db.session.commit()
-        print("[DEBUG] Cambio de estado y vendedor completado correctamente.")  # LOG
 
         # 📢 Crear notificación con los productos modificados
         if detalles_notificacion:

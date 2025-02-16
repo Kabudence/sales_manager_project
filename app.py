@@ -1,5 +1,4 @@
 from flask import Flask, request, jsonify
-from flask_bcrypt import Bcrypt
 from flask_jwt_extended import JWTManager
 
 from extensions import db, migrate, jwt
@@ -15,7 +14,8 @@ from routes.regmovdet import regmovdet_bp
 from routes.ventas import venta_bp
 from routes.fotos import fotos_bp
 from routes.utilidades import utilidades_bp
-
+from apscheduler.schedulers.background import BackgroundScheduler
+from services.cleanup import eliminar_fotos_antiguas
 jwt = JWTManager()
 
 def create_app():
@@ -34,6 +34,12 @@ def create_app():
     db.init_app(app)
     migrate.init_app(app, db)
     jwt.init_app(app)
+
+    # 📌 Iniciar tarea automática de eliminación de imágenes
+    scheduler = BackgroundScheduler()
+    scheduler.add_job(eliminar_fotos_antiguas, 'interval', days=1)  # Se ejecuta cada 24 horas
+    scheduler.start()
+
 
     app.register_blueprint(cliente_bp, url_prefix="/api/clientes")
     app.register_blueprint(proveedor_bp, url_prefix="/api/proveedores")

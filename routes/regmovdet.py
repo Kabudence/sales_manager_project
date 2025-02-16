@@ -27,29 +27,28 @@ def get_regmovdet(iddet):
     return jsonify(regmovdet_schema.dump(regmovdet)), 200
 
 
-import logging
-logging.basicConfig(level=logging.DEBUG)
-logger = logging.getLogger(__name__)
+# import logging  # (REMOVIDO)
+# logging.basicConfig(level=logging.DEBUG)  # (REMOVIDO)
+# logger = logging.getLogger(__name__)  # (REMOVIDO)
 
 @regmovdet_bp.route('/by-idcab/<int:idcab>', methods=['GET'])
 def get_regmovdet_by_idcab_join(idcab):
     try:
-        logger.info(f"Iniciando búsqueda de regmovdet con idcab = {idcab} (JOIN)")
+        # logger.info(f"Iniciando búsqueda de regmovdet con idcab = {idcab} (JOIN)")  # (REMOVIDO)
 
-        # Realizamos la consulta con JOIN usando el ORM
         resultados = db.session.query(RegMovDet, Producto.nomproducto).\
             join(Producto, RegMovDet.producto == Producto.idprod).\
             filter(RegMovDet.idcab == idcab).all()
 
+        # logger.warning(f"No se encontraron registros para idcab {idcab} (JOIN)")  # (REMOVIDO)
         if not resultados:
-            logger.warning(f"No se encontraron registros para idcab {idcab} (JOIN)")
             return jsonify({"message": f"No se encontraron registros para idcab {idcab}"}), 404
 
-        logger.info(f"Se encontraron {len(resultados)} registros para idcab {idcab} (JOIN)")
+        # logger.info(f"Se encontraron {len(resultados)} registros para idcab {idcab} (JOIN)")  # (REMOVIDO)
 
         salida = []
-        for regmovdet, nomproducto in resultados:  # Desempaquetamos la tupla
-            logger.debug(f"Procesando registro: iddet={regmovdet.iddet}, producto={regmovdet.producto}, nomproducto={nomproducto}")
+        for regmovdet, nomproducto in resultados:
+            # logger.debug(f"Procesando registro: iddet={regmovdet.iddet}, producto={regmovdet.producto}, nomproducto={nomproducto}")  # (REMOVIDO)
             salida.append({
                 "iddet": regmovdet.iddet,
                 "idcab": regmovdet.idcab,
@@ -62,11 +61,11 @@ def get_regmovdet_by_idcab_join(idcab):
                 "nomproducto": nomproducto
             })
 
-        logger.info("Consulta con JOIN completada con éxito.")
+        # logger.info("Consulta con JOIN completada con éxito.")  # (REMOVIDO)
         return jsonify(salida), 200
 
     except Exception as e:
-        logger.error(f"Error en get_regmovdet_by_idcab_join: {e}", exc_info=True)
+        # logger.error(f"Error en get_regmovdet_by_idcab_join: {e}", exc_info=True)  # (REMOVIDO)
         return jsonify({"error": str(e)}), 500
 
 
@@ -74,13 +73,13 @@ def get_regmovdet_by_idcab_join(idcab):
 @jwt_required()
 def get_regmovdet_by_num_doc_join(num_docum):
     try:
-        logger.info(f"Iniciando búsqueda de regmovdet con num_docum = {num_docum} (JOIN)")
+        # logger.info(f"Iniciando búsqueda de regmovdet con num_docum = {num_docum} (JOIN)")  # (REMOVIDO)
 
         # 1. Buscar la cabecera en regmovcab para obtener el idmov
         cabecera = RegMovCab.query.filter_by(num_docum=num_docum).first()
 
+        # logger.warning(f"No se encontró cabecera con num_docum = {num_docum}")  # (REMOVIDO)
         if not cabecera:
-            logger.warning(f"No se encontró cabecera con num_docum = {num_docum}")
             return jsonify({"message": f"No se encontró regmovcab con num_docum {num_docum}"}), 404
 
         idcab = cabecera.idmov
@@ -90,17 +89,15 @@ def get_regmovdet_by_num_doc_join(num_docum):
             join(Producto, RegMovDet.producto == Producto.idprod).\
             filter(RegMovDet.idcab == idcab).all()
 
+        # logger.warning(f"No se encontraron detalles (regmovdet) para idcab {idcab}")  # (REMOVIDO)
         if not resultados:
-            logger.warning(f"No se encontraron detalles (regmovdet) para idcab {idcab}")
             return jsonify({"message": f"No se encontraron registros para num_docum {num_docum}"}), 404
 
-        logger.info(f"Se encontraron {len(resultados)} registros para num_docum = {num_docum} (JOIN)")
+        # logger.info(f"Se encontraron {len(resultados)} registros para num_docum = {num_docum} (JOIN)")  # (REMOVIDO)
 
         salida = []
         for regmovdet, nomproducto in resultados:
-            logger.debug(
-                f"Procesando registro: iddet={regmovdet.iddet}, producto={regmovdet.producto}, nomproducto={nomproducto}"
-            )
+            # logger.debug(f"Procesando registro: iddet={regmovdet.iddet}, producto={regmovdet.producto}, nomproducto={nomproducto}")  # (REMOVIDO)
             salida.append({
                 "iddet": regmovdet.iddet,
                 "idcab": regmovdet.idcab,
@@ -113,13 +110,12 @@ def get_regmovdet_by_num_doc_join(num_docum):
                 "nomproducto": nomproducto
             })
 
-        logger.info("Consulta con JOIN completada con éxito.")
+        # logger.info("Consulta con JOIN completada con éxito.")  # (REMOVIDO)
         return jsonify(salida), 200
 
     except Exception as e:
-        logger.error(f"Error en get_regmovdet_by_num_doc_join: {e}", exc_info=True)
+        # logger.error(f"Error en get_regmovdet_by_num_doc_join: {e}", exc_info=True)  # (REMOVIDO)
         return jsonify({"error": str(e)}), 500
-
 
 
 # POST: Crear un nuevo registro
