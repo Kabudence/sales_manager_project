@@ -25,9 +25,7 @@ def get_linea(id):
 @jwt_required()
 def create_linea():
     linea = linea_schema.load(request.json)
-    print(request.json)
     data = request.get_json()
-    print(data)
     errors = linea_schema.validate(data)
     if errors:
         return jsonify(errors), 400
@@ -40,9 +38,7 @@ def create_linea():
 @jwt_required()
 def update_linea(id):
     linea = Linea.query.get_or_404(id)
-    print(request.json)
     data = request.get_json()
-    print(data)
     errors = linea_schema.validate(data)
     if errors:
         return jsonify(errors), 400
