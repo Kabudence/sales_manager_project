@@ -17,14 +17,12 @@ def cambiar_a_leido(notificacion_id):
         notificacion = Notificacion.query.get(notificacion_id)
 
         if not notificacion:
-            print(f"[DEBUG] /notificaciones/{notificacion_id}/leido => Notificación no encontrada.")
             return jsonify({'error': f'Notificación con id {notificacion_id} no encontrada'}), 404
 
         # Cambiar el estado a 'leído'
         notificacion.estado = 'leido'
         db.session.commit()
 
-        print(f"[DEBUG] Estado actualizado a 'leído' => id={notificacion_id}")
         return jsonify({
             'message': "Estado de la notificación actualizado a 'leído'",
             'notificacion': {
@@ -40,7 +38,6 @@ def cambiar_a_leido(notificacion_id):
         db.session.rollback()
 
         # Imprimir el traceback del error
-        print("[ERROR] Ocurrió una excepción en /notificaciones/<id>/leido:")
         traceback.print_exc()
 
         return jsonify({'error': str(e)}), 500
@@ -85,6 +82,5 @@ def obtener_notificaciones():
         return jsonify({"notificaciones": resultado}), 200
 
     except Exception as e:
-        print("[ERROR] Ocurrió una excepción en GET /notificaciones:")
         traceback.print_exc()
         return jsonify({"error": str(e)}), 500
