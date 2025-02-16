@@ -1,12 +1,11 @@
 from flask import Flask, request, jsonify
-from flask_jwt_extended import JWTManager
-from sqlalchemy import text
+
 
 from extensions import db, migrate, jwt
 from config import Config
 from flask_cors import CORS
 
-from routes import proveedor_bp, producto_bp, linea_bp, clase_bp, tienda_bp, vendedor_bp, serie_bp,auth_bp
+from routes import proveedor_bp, producto_bp, linea_bp, clase_bp, tienda_bp, vendedor_bp, serie_bp, auth_bp
 from routes.clientes import cliente_bp
 from routes.compras import compra_bp
 from routes.notificaciones import notificaciones_bp
@@ -17,13 +16,23 @@ from routes.fotos import fotos_bp
 from routes.utilidades import utilidades_bp
 from apscheduler.schedulers.background import BackgroundScheduler
 from services.cleanup import eliminar_fotos_antiguas
-jwt = JWTManager()
+
+# 🔹 Define la aplicación de Flask globalmente
+app = Flask(__name__)
+app.config.from_object(Config)
+
+# 🔹 Inicializa extensiones antes de `create_app()`
+db.init_app(app)
+migrate.init_app(app, db)
+jwt.init_app(app)
+
+# 📌 Iniciar tarea automática de eliminación de imágenes
+scheduler = BackgroundScheduler()
+scheduler.add_job(eliminar_fotos_antiguas, 'interval', days=1)  # Se ejecuta cada 24 horas
+scheduler.start()
 
 def create_app():
-    app = Flask(__name__)
-    app.config.from_object(Config)
-
-    # Ajustar CORS: permitir orígenes y métodos
+    # Ajustar CORS
     CORS(app, resources={
         r"/api/*": {
             "origins": ["http://localhost:5173", "http://127.0.0.1:5173"],
@@ -32,16 +41,7 @@ def create_app():
         }
     })
 
-    db.init_app(app)
-    migrate.init_app(app, db)
-    jwt.init_app(app)
-
-    # 📌 Iniciar tarea automática de eliminación de imágenes
-    scheduler = BackgroundScheduler()
-    scheduler.add_job(eliminar_fotos_antiguas, 'interval', days=1)  # Se ejecuta cada 24 horas
-    scheduler.start()
-
-
+    # 🔹 Registrar blueprints
     app.register_blueprint(cliente_bp, url_prefix="/api/clientes")
     app.register_blueprint(proveedor_bp, url_prefix="/api/proveedores")
     app.register_blueprint(linea_bp, url_prefix='/api/lineas')
@@ -56,7 +56,6 @@ def create_app():
     app.register_blueprint(auth_bp, url_prefix="/api/auth")
     app.register_blueprint(fotos_bp, url_prefix='/api/fotos')
     app.register_blueprint(notificaciones_bp, url_prefix='/api/notificaciones')
-
     app.register_blueprint(regmovdet_bp, url_prefix='/api/regmovdet')
     app.register_blueprint(utilidades_bp, url_prefix='/api/utilidades')
 
@@ -65,8 +64,6 @@ def create_app():
         if request.method == "OPTIONS":
             response = app.make_default_options_response()
             headers = response.headers
-
-            # Asegúrate de que los encabezados necesarios estén presentes
             headers["Access-Control-Allow-Origin"] = request.headers.get("Origin", "*")
             headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS"
             headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization"
@@ -86,10 +83,8 @@ def create_app():
 
     return app
 
-
-
+# 🔹 Exponer `app` globalmente para Gunicorn
 if __name__ == '__main__':
-    app = create_app()
     with app.app_context():
         db.create_all()
     app.run(debug=True)
