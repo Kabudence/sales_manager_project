@@ -27,7 +27,6 @@ def get_vendedor(idvend):
 @vendedor_bp.route('', methods=['POST'])
 @jwt_required()
 def create_vendedor():
-    print(request.json)  # Verifica qué datos estás recibiendo
     data = request.get_json()
     errors = vendedor_schema.validate(data)
     if errors:
