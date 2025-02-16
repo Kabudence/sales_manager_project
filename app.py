@@ -1,5 +1,6 @@
 from flask import Flask, request, jsonify
 from flask_jwt_extended import JWTManager
+from sqlalchemy import text
 
 from extensions import db, migrate, jwt
 from config import Config
@@ -73,20 +74,19 @@ def create_app():
 
     @jwt.unauthorized_loader
     def unauthorized_callback(reason):
-        print(f"[JWT] Unauthorized callback activado. Razón: {reason}")
         return jsonify({"msg": "No autorizado", "reason": reason}), 401
 
     @jwt.invalid_token_loader
     def invalid_token_callback(reason):
-        print(f"[JWT] Invalid token callback activado. Razón: {reason}")
         return jsonify({"msg": "Token inválido", "reason": reason}), 422
 
     @jwt.expired_token_loader
     def expired_token_callback(jwt_header, jwt_payload):
-        print(f"[JWT] Expired token callback activado. JWT: {jwt_payload}")
         return jsonify({"msg": "El token ha expirado"}), 401
 
     return app
+
+
 
 if __name__ == '__main__':
     app = create_app()
