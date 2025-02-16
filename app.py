@@ -32,6 +32,11 @@ scheduler = BackgroundScheduler()
 scheduler.add_job(eliminar_fotos_antiguas, 'interval', days=1)
 scheduler.start()
 
+@app.route("/test-db")
+def test_db():
+    return {"msg": "API funcionando correctamente en Railway"}, 200
+
+
 # 4) Configurar CORS sobre la instancia global `app`
 CORS(app, resources={
     r"/api/*": {
