@@ -11,7 +11,7 @@ cliente_schema = ClienteSchema()
 clientes_schema = ClienteSchema(many=True)
 
 
-@cliente_bp.route('/', methods=['GET'])
+@cliente_bp.route('', methods=['GET'])
 @jwt_required()
 def get_all_clientes():
 
