@@ -36,11 +36,15 @@ scheduler.start()
 # 4) Configurar CORS sobre la instancia global `app`
 CORS(app, resources={
     r"/api/*": {
-        "origins": ["http://localhost:5173", "http://127.0.0.1:5173","https://web-production-927a.up.railway.app"],
+        "origins": [
+            "http://localhost:5173",
+            "http://127.0.0.1:5173",
+        ],
         "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
         "allow_headers": ["Content-Type", "Authorization"],
     }
 })
+
 
 # 5) Registrar todos los blueprints
 app.register_blueprint(cliente_bp, url_prefix="/api/clientes")
@@ -60,16 +64,16 @@ app.register_blueprint(notificaciones_bp, url_prefix='/api/notificaciones')
 app.register_blueprint(regmovdet_bp, url_prefix='/api/regmovdet')
 app.register_blueprint(utilidades_bp, url_prefix='/api/utilidades')
 
-# 6) Manejar las solicitudes OPTIONS (CORS preflight)
-@app.before_request
-def handle_preflight():
-    if request.method == "OPTIONS":
-        response = app.make_default_options_response()
-        headers = response.headers
-        headers["Access-Control-Allow-Origin"] = request.headers.get("Origin", "*")
-        headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS"
-        headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization"
-        return response
+# # 6) Manejar las solicitudes OPTIONS (CORS preflight)
+# @app.before_request
+# def handle_preflight():
+#     if request.method == "OPTIONS":
+#         response = app.make_default_options_response()
+#         headers = response.headers
+#         headers["Access-Control-Allow-Origin"] = request.headers.get("Origin", "*")
+#         headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS"
+#         headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization"
+#         return response
 
 
 # 7) Manejo de errores de JWT
