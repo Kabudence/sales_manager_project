@@ -56,7 +56,7 @@ def create_producto():
 
 
 @producto_bp.route('/<string:id>', methods=['GET'])
-# @jwt_required()
+@jwt_required()
 def get_producto(id):
     """
     GET /api/productos/<id>
@@ -64,7 +64,7 @@ def get_producto(id):
     producto = Producto.query.get_or_404(id)
     return jsonify(producto_schema.dump(producto)), 200
 @producto_bp.route('/', methods=['GET'])
-# @jwt_required()
+@jwt_required()
 def get_all_productos():
     # Consulta con JOIN para incluir el nombre del estado
     productos = db.session.query(
