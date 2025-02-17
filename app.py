@@ -71,6 +71,13 @@ def handle_preflight():
         headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization"
         return response
 
+@app.after_request
+def add_cors_headers(response):
+    origin = request.headers.get("Origin", "*")
+    response.headers["Access-Control-Allow-Origin"] = origin
+    response.headers["Access-Control-Allow-Credentials"] = "true"
+    return response
+
 # 7) Manejo de errores de JWT
 @jwt.unauthorized_loader
 def unauthorized_callback(reason):
