@@ -2,6 +2,8 @@ from datetime import datetime
 
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required
+from sqlalchemy import text
+
 from models import RegMovCab, RegMovDet, Producto
 from schemas import RegMovCabSchema
 from extensions import db
@@ -211,10 +213,12 @@ def create_inprocess():
         vvta = data.get("vvta")
         igv = data.get("igv")
         total = data.get("total")
-        item_list = data.get("ItemList")  # 🔹 Lista de productos
+        idemp = data.get("idemp")  # 🔹 Nuevo campo dinámico
+        item_list = data.get("ItemList")
+
 
         # 📌 Validaciones
-        if not all([tip_mov, tip_docum, num_docum, ruc_cliente, vvta, igv, total, item_list]):
+        if not all([tip_mov, tip_docum, num_docum, ruc_cliente, vvta, igv, total, idemp, item_list]):
             return jsonify({"error": "Faltan datos obligatorios"}), 400
 
         # 📌 Fecha actual
@@ -232,7 +236,7 @@ def create_inprocess():
             vvta=float(vvta),
             igv=float(igv),
             total=float(total),
-            idemp="01",
+            idemp=idemp,
             estado=2
         )
 
@@ -471,6 +475,40 @@ def create_compra():
         return jsonify({"error": str(e)}), 500
 
 
+@regmovcab_bp.route('/current-sales-note', methods=['GET'])
+def get_current_boleta():
+    try:
+        current_value = get_current_boleta_value()
+        return jsonify({"current_boleta": current_value}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 
+@regmovcab_bp.route('/increment-sales-note', methods=['POST'])
+def increment_boleta():
+    try:
+        new_value = increment_boleta_value()
+        return jsonify({"new_boleta": new_value}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
+
+# Funciones de apoyo en otro archivo (ej: database.py)
+def get_current_boleta_value():
+    result = db.session.execute(
+        text("SELECT `last_value` FROM sequence_numbers WHERE name='nota de venta' FOR UPDATE")
+    )
+    return result.fetchone()[0]
+
+
+def increment_boleta_value():
+    current_value = get_current_boleta_value()
+    new_value = current_value + 1
+
+    db.session.execute(
+        text("UPDATE sequence_numbers SET `last_value` = :new_value WHERE name='nota de venta'"),
+        {"new_value": new_value}
+    )
+    db.session.commit()
+
+    return new_value
