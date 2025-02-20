@@ -7,8 +7,8 @@ from flask_jwt_extended import jwt_required
 from models import Producto, Linea, TipoEstados
 from schemas import ProductoSchema
 from extensions import db
-from sqlalchemy import func
 from unidecode import unidecode
+from sqlalchemy import func, and_
 
 producto_bp = Blueprint('producto_bp', __name__)
 
@@ -146,52 +146,64 @@ def delete_producto(id):
 @producto_bp.route('/search', methods=['GET'])
 @jwt_required()
 def search_productos():
-    term = request.args.get('term', '')
-    if not term:
-        return jsonify([]), 200
+    try:
+        term = request.args.get('term', '').strip()
+        if not term:
+            return jsonify([]), 200
 
-    # Normalizar término de búsqueda
-    normalized_term = f"%{unidecode(term).lower()}%"
+        # Normalizar término: eliminar acentos y convertir a minúsculas
+        cleaned_term = unidecode(term).lower()
+        search_terms = cleaned_term.split()  # Dividir en palabras individuales
 
-    # Consulta con joins y filtro
-    productos = db.session.query(
-        Producto.idprod,
-        Producto.nomproducto,
-        Producto.umedida,
-        Producto.st_ini,
-        Producto.st_act,
-        Producto.st_min,
-        Producto.pr_costo,
-        Producto.prventa,
-        Producto.modelo,
-        Producto.medida,
-        Producto.estado,
-        Linea.nombre.label("linea_nombre"),
-        TipoEstados.name.label("estado_nombre")
-    ).join(
-        Linea, Producto.idprod.startswith(Linea.idlinea)
-    ).join(
-        TipoEstados, Producto.estado == TipoEstados.tipo_estado_id
-    ).filter(
-        func.unaccent(func.lower(Producto.nomproducto)).ilike(func.unaccent(normalized_term))
-    ).all()
+        # Crear una lista de filtros para cada palabra
+        filters = [
+            func.lower(Producto.nomproducto).like(func.lower(f"%{word}%"))
+            for word in search_terms
+        ]
 
-    # Formatear resultados
-    resultados = []
-    for p in productos:
-        resultados.append({
-            "idprod": p.idprod,
-            "nomproducto": p.nomproducto,
-            "umedida": p.umedida,
-            "st_ini": p.st_ini,
-            "st_act": p.st_act,
-            "st_min": p.st_min,
-            "pr_costo": p.pr_costo,
-            "prventa": p.prventa,
-            "modelo": p.modelo,
-            "medida": p.medida,
-            "estado": p.estado_nombre,
-            "linea": p.linea_nombre or "Sin Línea"
-        })
+        # Consulta adaptada para MySQL con múltiples palabras
+        productos = db.session.query(
+            Producto.idprod,
+            Producto.nomproducto,
+            Producto.umedida,
+            Producto.st_ini,
+            Producto.st_act,
+            Producto.st_min,
+            Producto.pr_costo,
+            Producto.prventa,
+            Producto.modelo,
+            Producto.medida,
+            Producto.estado,
+            Linea.nombre.label("linea_nombre"),
+            TipoEstados.name.label("estado_nombre")
+        ).join(
+            Linea, Producto.idprod.startswith(Linea.idlinea)
+        ).join(
+            TipoEstados, Producto.estado == TipoEstados.tipo_estado_id
+        ).filter(
+            and_(*filters)  # Aplicar filtros con OR
+        ).all()
 
-    return jsonify(resultados), 200
+        # Formatear resultados
+        resultados = [
+            {
+                "idprod": p.idprod,
+                "nomproducto": p.nomproducto,
+                "umedida": p.umedida,
+                "st_ini": p.st_ini,
+                "st_act": p.st_act,
+                "st_min": p.st_min,
+                "pr_costo": p.pr_costo,
+                "prventa": p.prventa,
+                "modelo": p.modelo,
+                "medida": p.medida,
+                "estado": p.estado_nombre,
+                "linea": p.linea_nombre or "Sin Línea"
+            } for p in productos
+        ]
+
+        return jsonify(resultados), 200
+
+    except Exception as e:
+        print(f"Error en búsqueda: {str(e)}")
+        return jsonify({"error": "Error interno del servidor"}), 500
