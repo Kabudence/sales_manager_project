@@ -8,7 +8,7 @@ from models import Producto, Linea, TipoEstados
 from schemas import ProductoSchema
 from extensions import db
 from unidecode import unidecode
-from sqlalchemy import func
+from sqlalchemy import func, text
 
 producto_bp = Blueprint('producto_bp', __name__)
 
@@ -153,47 +153,40 @@ def search_productos():
         if not term:
             return jsonify([]), 200
 
-        # Normalizar término: eliminar acentos y convertir a minúsculas
+        # Normalizar término de búsqueda
         cleaned_term = unidecode(term).lower()
-        search_terms = cleaned_term.split()  # Dividir en palabras individuales
+        search_terms = cleaned_term.split()
 
-        # Crear una lista de filtros para cada palabra
-        filters = [
-            func.lower(func.unaccent(Producto.nomproducto)).like(func.lower(func.unaccent(f"%{word}%")))
-            for word in search_terms
-        ]
+        # Construir la consulta dinámica
+        sql_query = """
+            SELECT 
+                p.idprod,
+                p.nomproducto,
+                p.umedida,
+                p.st_ini,
+                p.st_act,
+                p.st_min,
+                p.pr_costo,
+                p.prventa,
+                p.modelo,
+                p.medida,
+                p.estado,
+                te.name AS estado_nombre
+            FROM productos p
+            JOIN tipo_estados te ON p.estado = te.tipo_estado_id
+            WHERE 1=1
+        """
 
-        # Ajustar la lógica de filtrado según la cantidad de palabras
-        if len(search_terms) == 1:
-            # Si es una sola palabra, usar un filtro simple
-            query_filter = filters[0]
-        else:
-            # Si son varias palabras, usar un filtro AND para asegurar que todas las palabras estén presentes
-            query_filter = and_(*filters)
+        # Agregar condiciones AND LIKE para cada palabra
+        params = {}
+        for i, word in enumerate(search_terms):
+            sql_query += f" AND LOWER(p.nomproducto) LIKE :word{i}"
+            params[f"word{i}"] = f"%{word}%"
 
-        # Consulta adaptada para MySQL con múltiples palabras
-        productos = db.session.query(
-            Producto.idprod,
-            Producto.nomproducto,
-            Producto.umedida,
-            Producto.st_ini,
-            Producto.st_act,
-            Producto.st_min,
-            Producto.pr_costo,
-            Producto.prventa,
-            Producto.modelo,
-            Producto.medida,
-            Producto.estado,
-            Linea.nombre.label("linea_nombre"),
-            TipoEstados.name.label("estado_nombre")
-        ).join(
-            Linea, Producto.idprod.startswith(Linea.idlinea)
-        ).join(
-            TipoEstados, Producto.estado == TipoEstados.tipo_estado_id
-        ).filter(
-            query_filter  # Aplicar el filtro dinámico
-        ).all()
-
+        # Ejecutar la consulta
+        query = text(sql_query)
+        productos = db.session.execute(query, params).fetchall()
+        print(productos)
         # Formatear resultados
         resultados = [
             {
@@ -203,12 +196,11 @@ def search_productos():
                 "st_ini": p.st_ini,
                 "st_act": p.st_act,
                 "st_min": p.st_min,
-                "pr_costo": p.pr_costo,
+                "pr_costo": float(p.pr_costo) if p.pr_costo else 0,
                 "prventa": p.prventa,
                 "modelo": p.modelo,
                 "medida": p.medida,
-                "estado": p.estado_nombre,
-                "linea": p.linea_nombre or "Sin Línea"
+                "estado": p.estado_nombre
             } for p in productos
         ]
 
