@@ -8,7 +8,7 @@ from models import Producto, Linea, TipoEstados
 from schemas import ProductoSchema
 from extensions import db
 from unidecode import unidecode
-from sqlalchemy import func, and_
+from sqlalchemy import func
 
 producto_bp = Blueprint('producto_bp', __name__)
 
@@ -143,6 +143,8 @@ def delete_producto(id):
     db.session.commit()
     return jsonify({"message": "Producto eliminado exitosamente"}), 200
 
+from sqlalchemy import or_, and_
+
 @producto_bp.route('/search', methods=['GET'])
 @jwt_required()
 def search_productos():
@@ -157,9 +159,17 @@ def search_productos():
 
         # Crear una lista de filtros para cada palabra
         filters = [
-            func.lower(Producto.nomproducto).like(func.lower(f"%{word}%"))
+            func.lower(func.unaccent(Producto.nomproducto)).like(func.lower(func.unaccent(f"%{word}%")))
             for word in search_terms
         ]
+
+        # Ajustar la lógica de filtrado según la cantidad de palabras
+        if len(search_terms) == 1:
+            # Si es una sola palabra, usar un filtro simple
+            query_filter = filters[0]
+        else:
+            # Si son varias palabras, usar un filtro AND para asegurar que todas las palabras estén presentes
+            query_filter = and_(*filters)
 
         # Consulta adaptada para MySQL con múltiples palabras
         productos = db.session.query(
@@ -181,7 +191,7 @@ def search_productos():
         ).join(
             TipoEstados, Producto.estado == TipoEstados.tipo_estado_id
         ).filter(
-            and_(*filters)  # Aplicar filtros con OR
+            query_filter  # Aplicar el filtro dinámico
         ).all()
 
         # Formatear resultados
