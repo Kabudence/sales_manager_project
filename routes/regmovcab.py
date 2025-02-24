@@ -147,7 +147,7 @@ def change_state_to_complete(idmov):
                     else:
                         producto.st_act = nuevo_stock
                         detalles_notificacion.append(
-                            f"{producto.nomproducto}: -{regmovdet.cantidad} unidades, Stock actual: {nuevo_stock}"
+                            f"{producto.nomproducto}:  Stock actual: {nuevo_stock}"
                         )
 
                         # Verificar si el stock actual alcanza el stock mínimo
@@ -166,7 +166,7 @@ def change_state_to_complete(idmov):
 
         # 📢 Crear notificación con los productos modificados
         if detalles_notificacion:
-            mensaje_notificacion = f"Venta completada por {vendedor}. Productos modificados:\n" + "\n".join(detalles_notificacion)
+            mensaje_notificacion = f"Venta completada por {vendedor.nomvendedor}.\n\nProductos modificados:\n\n" + "\n".join(detalles_notificacion)
             crear_notificacion(mensaje_notificacion, numdocum_regmovcab=numdocum_regmovcab)
 
         # 📢 Crear notificaciones de alerta por stock mínimo
@@ -449,7 +449,7 @@ def create_compra():
         # 8. Crear una notificación normal con el detalle de los productos actualizados
         if detalles_notificacion:
             msj_notificacion = (
-                "Compra registrada. Productos actualizados:\n" +
+                "Compra registrada:\n" +
                 "\n".join(detalles_notificacion)
             )
             crear_notificacion(msj_notificacion, numdocum_regmovcab=num_docum)
